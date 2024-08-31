@@ -1,0 +1,45 @@
+---
+title: "R_Activity_Assignment_1"
+author: "Dahee Ahn"
+date: "2024-08-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("readxl")
+```
+
+## R Markdown 
+  
+  
+## Question 1. Load in the .txt version of the Iris data using the read.table() command.
+```{r}
+read.table(file = "C:/Users/chemk/OneDrive/Desktop/Classes/ENT6707_DataAnalysis/week2/Iris_data_text_file.txt", header = TRUE, sep = "\t", na.strings = ".")
+iris_df_txt <- read.table(file =
+"C:/Users/chemk/OneDrive/Desktop/Classes/ENT6707_DataAnalysis/week2/Iris_data_text_file.txt", header = TRUE, sep = "\t", na.strings = ".")
+```
+  
+  
+## Question 2. How many rows are in the data?
+```{r}
+nrow(iris_df_txt)
+```
+
+
+## Question 3. How many NA values are there per column?
+```{r}
+colSums(is.na(iris_df_txt))
+```
+
+
+## Question 4. Provide the first 10 rows of the data.
+```{r}
+head(iris_df_txt, n=10)
+```
+
+
+## Question 5. Provide the last 3 rows of the data.
+```{r}
+tail(iris_df_txt, n=3)
+```
