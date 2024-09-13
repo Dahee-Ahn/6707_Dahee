@@ -1,5 +1,5 @@
 ---
-title: "R_Activity_Practice_2"
+title: "R_Activity_Practice"
 author: "Dahee Ahn"
 date: "2024-09-06"
 output: html_document
@@ -185,7 +185,55 @@ set.seed(123)
 sample(1:100,3)
 ```
 
+## R_Activity_Practice_3
 
+```{r}
+library(datasets)
+head(iris)
+```
 
+```{r}
+plot(Sepal.Length~Petal.Width, data=iris)
+```
 
+```{r}
+plot(Sepal.Length~Petal.Width, data=iris, pch=15, col="tomato4", xlab="Width of Petals", ylab="Length of Sepals")
+```
+
+```{r}
+library("tidyverse")
+library("ggplot2")
+```
+
+```{r}
+ggplot(data=iris, mapping=aes(x=Petal.Width, y=Sepal.Length, col=Species)) + geom_point()
+```
+
+```{r}
+ggplot(iris, mapping=aes(x=Petal.Width, y=Sepal.Length)) + geom_point(shape=15, col="tomato4")
+```
+
+```{r}
+ggplot(iris, mapping=aes(x=Petal.Width, y=Sepal.Length, col=Species, shape=Species)) + geom_point()
+```
+
+```{r}
+ggplot(iris, mapping=aes(x=Petal.Width, y=Sepal.Length, col=Species, shape=Species))+geom_point()+theme_classic()
+```
+
+```{r}
+ggplot(iris, mapping=aes(x=Petal.Width, y=Sepal.Length, col=Species, shape=Species))+geom_point()+theme_classic()+theme(legend.position=c(0.2,0.8), legend.title=element_blank())
+```
+
+```{r}
+ggplot(iris, mapping=aes(x=Petal.Width, y=Sepal.Length, col=Species, shape=Species))+geom_point()+theme_classic()+xlab("Petal width (cm)")+ylab("Sepal length (cm)")+theme(legend.position="none")
+```
+
+```{r}
+ggplot(iris, mapping=aes(x=Petal.Width))+geom_histogram(color="purple", fill="pink")+theme_classic()+theme(legend.position="none")
+```
+
+```{r}
+ggplot(iris, mapping=aes(x=Species, y=Petal.Width, fill=Species))+geom_boxplot()+theme_classic()+scale_fill_manual(values=c("pink","purple","red"))+theme(legend.position="none")
+```
 

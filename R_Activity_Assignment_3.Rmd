@@ -1,0 +1,46 @@
+---
+title: "R_Activity_Assignment_3"
+author: "Dahee Ahn"
+date: "2024-09-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+rm(list=ls())
+```
+
+```{r}
+options(repos=c(CRAN="https://cran.r-project.org"))
+install.packages("ggplot2")
+```
+
+## 1. Download the cherrytree data set from Canvas and load it into R using read.table(). Note this file is a .csv file (comma separated values).
+```{r}
+cherrytrees_df_csv <- read.table(file="C:/Users/chemk/OneDrive/Desktop/Classes/ENT6707_DataAnalysis/week4/cherrytrees.csv",header=TRUE, sep=",")
+summary(cherrytrees_df_csv)
+```
+```{r}
+head(cherrytrees_df_csv)
+tail(cherrytrees_df_csv)
+str(cherrytrees_df_csv)
+```
+## 2. Make a scatterplot of Height as a function of Girth using ggplot2. Use the theme theme_bw() and change the black circles to orange, hollow triangles.
+```{r}
+library("ggplot2")
+ggplot(data=cherrytrees_df_csv, mapping=aes(x=Girth, y=Height))+geom_point(shape=2, col="orange")+theme_bw()
+```
+## 3.Make a boxplot of Height and as a function of Variety using ggplot2. Change the x-axis label to “Prunus variety” and the y-axis label to “Height (feet)”. Use the theme theme_classic() and fill the variety A box as dark blue and the variety B box as yellow.
+```{r}
+ggplot(cherrytrees_df_csv, mapping=aes(x=Variety, y=Height, fill=Variety))+geom_boxplot()+scale_fill_manual(values=c("A"="darkblue", "B"="yellow"))+theme_classic()+xlab("Prunus variety")+ylab("Height (feet)")
+```
+
+
+## 4. Make the same plot as the previous question, but make it a violin plot instead of a box plot and remove the legend.
+```{r}
+ggplot(cherrytrees_df_csv, mapping=aes(x=Variety, y=Height, fill=Variety))+geom_violin()+scale_fill_manual(values=c("A"="darkblue", "B"="yellow"))+theme_classic()+xlab("Prunus variety")+ylab("Height (feet)")+theme(legend.position="none")
+```
+
