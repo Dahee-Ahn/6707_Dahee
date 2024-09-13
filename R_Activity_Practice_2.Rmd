@@ -1,0 +1,191 @@
+---
+title: "R_Activity_Practice_2"
+author: "Dahee Ahn"
+date: "2024-09-06"
+output: html_document
+---
+```{r}
+rm(list= ls())
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readxl)
+```
+
+```{r}
+iris_df <- read_excel(path="C:/Users/chemk/OneDrive/Desktop/Classes/ENT6707_DataAnalysis/week2/Iris_data_excel.xlsx", sheet="some_famous_data", range= "A1:E151")
+```
+
+```{r}
+summary(iris_df)
+```
+
+```{r}
+nrow(iris_df)
+```
+
+```{r}
+str(iris_df)
+```
+
+```{r}
+head(iris_df)
+```
+
+```{r}
+tail(iris_df)
+```
+
+```{r}
+View(iris_df)
+```
+
+```{r}
+head(iris_df$Species)
+```
+
+```{r}
+summary(iris_df$Species)
+```
+
+```{r}
+is.character(iris_df$Species)
+```
+
+```{r}
+iris_df$Species <- as.factor(iris_df$Species)
+summary(iris_df$Species)
+```
+
+```{r}
+sepal_greater5 <- iris_df$Sepal.Length > 5
+table(sepal_greater5)
+```
+
+```{r}
+sepal_equal5.1 <- iris_df$Sepal.Length == 5.1
+table(sepal_equal5.1)
+```
+
+```{r}
+x <- 5+5
+x
+```
+
+```{r}
+X <- 5+5; X
+```
+
+```{r}
+y = 7+3; y
+```
+
+```{r}
+y==x
+```
+
+```{r}
+head(iris_df$Sepal.Length %in% c(5.1, 4.6, 6.0))
+```
+
+```{r}
+head(which(iris_df$Sepal.Length %in% c(5.1, 4.6, 6.0)))
+```
+
+```{r}
+iris_df[25, 2:3]
+iris_df[c(26,31),]
+iris_df[,]
+iris_df[-5,1:2]
+iris_df[which(iris_df$Sepal.Length>5),]
+iris_df[which(iris_df$Sepal.Length==5.1),]
+```
+
+```{r}
+tapply(iris_df$Sepal.Width, iris_df$Species, mean)
+```
+
+```{r}
+install.packages("tidyverse")
+library(tidyverse)
+install.packages("conflicted")
+library(conflicted)
+```
+
+```{r}
+iris_df$Species <- as_factor(iris_df$Species)
+```
+
+```{r}
+iris_df_subset_1 <- iris_df %>% dplyr::filter(Sepal.Length > 5)
+summary(iris_df_subset_1)
+```
+
+```{r}
+iris_df_subset_2 <- dplyr::filter(iris_df, Sepal.Length==5)
+summary(iris_df_subset_2)
+```
+
+```{r}
+species_counts <- table(iris_df_subset_1$Species)
+print(species_counts)
+```
+
+```{r}
+species_counts <- table(iris_df_subset_2$Species)
+print(species_counts)
+```
+
+```{r}
+iris_df %>% group_by(Species) %>% summarise(Means = mean(Sepal.Width), SD = sd(Sepal.Width), max_sep = max(Sepal.Width))
+```
+
+```{r}
+iris_df %>% group_by(Species) %>% summarise(Means = mean(Sepal.Width), SD = sd(Sepal.Width), max_sep = max(Sepal.Width)) %>% arrange(Means)
+```
+
+
+
+
+
+
+
+
+```{r}
+set.seed(123)
+iris_df[sample(1:nrow(iris_df),10), "Sepal.Length"]
+```
+
+```{r}
+tail(is.na(iris_df$Sepal.Length))
+```
+```{r}
+mean(iris_df$"Sepal.Length")
+```
+
+```{r}
+mean(na.omit(iris_df$"Sepal.Length"))
+```
+
+```{r}
+mean(iris_df$"Sepal.Length", na.rm=T)
+```
+
+```{r}
+try1 <- iris_df %>% dplyr::filter(Sepal.Length > mean(Sepal.Length, na.rm = TRUE))
+summary(try1)
+```
+
+```{r}
+set.seed(123)
+sample(1:100,3)
+```
+
+
+
+
+

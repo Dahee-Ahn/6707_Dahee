@@ -1,0 +1,54 @@
+---
+title: "R_Activity_Assignment_2"
+author: "Dahee Ahn"
+date: "2024-09-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+rm(list=ls())
+```
+
+## Question 1. Load in the breakfast data set. Remember to check the file type so that you can identify the right command for loading in the data.
+```{r}
+breakfast_df <- read.table("C:/Users/chemk/OneDrive/Desktop/Classes/ENT6707_DataAnalysis/week3/breakfast.txt", header = TRUE)
+summary(breakfast_df)
+nrow(breakfast_df)
+head(breakfast_df)
+tail(breakfast_df)
+View(breakfast_df)
+```
+
+## Question 2. Use a single command to count the number of columns in the breakfast data.
+```{r}
+breakfast_df$Calories <- as.numeric(breakfast_df$Calories)
+str(breakfast_df)
+```
+
+```{r}
+ncol(breakfast_df)
+```
+
+## Question 3. Use base R (i.e., no external packages should be used for this question) to create a subset of the data that has only observations with values of Calories greater than 130.
+```{r}
+breakfast_df[which(breakfast_df$Calories>130),]
+```
+
+## Question 4. Use the pipe operators in tidyverse to create a subset of the data that has only observations with values of Calories greater than 130.
+```{r}
+library(tidyverse)
+breakfast_df_subset_1 <- breakfast_df %>% filter(Calories > 130)
+summary(breakfast_df_subset_1)
+```
+
+## Question 5. Use the pipe operators in tidyverse to calculate the mean Sugars by Company.
+```{r}
+breakfast_df %>% group_by(Company) %>% summarise(Means=mean(Sugars),) %>% arrange(Means)
+```
+
