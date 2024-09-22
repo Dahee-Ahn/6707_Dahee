@@ -1,0 +1,70 @@
+---
+title: "R_Activity_4"
+author: "Dahee Ahn"
+date: "2024-09-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+rm(list=ls())
+```
+
+```{r}
+library(datasets)
+library(tidyverse)
+library(ggplot2)
+```
+
+## 1. Download the pig_teeth data set and load it into R. Name the dataset pigs in R. Convert the dose column to a factor using pigs$dose <- as.factor(pigs$dose) and provide a summary() of the resulting data set.
+```{r}
+pigs <- read.table("C:/Users/chemk/OneDrive/Desktop/Classes/ENT6707_DataAnalysis/week5/pig_teeth.csv", header = TRUE, sep =",")
+head(pigs)
+tail(pigs)
+summary(pigs)
+pigs$dose <- as.factor(pigs$dose)
+summary(pigs$dose)
+```
+
+## 2. We are going to compare len (length of the cells) by dose levels. First, we need to graph the data (if possible, always always always graph your data before analyzing it!). Make a boxplot with ggplot2 with Length of cells as the y-axis and Dose on the x-axis. Use the theme theme_classic().
+```{r}
+ggplot(pigs, mapping=aes(x=dose, y=len, fill=dose)) + geom_boxplot() +geom_point() + theme_classic () + scale_fill_manual(values =c("yellow", "blue"))
+```
+
+## 3. Look at the graph you just created. Do the variances look equal? If not, what might you do to fix the issue? Please write a response - we are not asking for an example using R code for this question.
+
+## Answer: The variances look equal.If I have an issue with homogeneity of variances, square-root or log-transformations can often help.
+
+
+
+
+## 4. That leaves one assumption left: normality. Check the normality of len using a method of your choosing. Is this assumption met? Write one sentence explaining your reasoning.
+
+## Answer: I would choose Normal Q-Q plot because the Q-Q plot shows a roughly straight line, suggesting the data is approximately distributed.
+```{r}
+hist(pigs$len)
+```
+
+```{r}
+qqnorm(pigs$len)
+```
+
+## 5. Conduct a two-sided t-test comparing len between your two levels of dose. Set var.equal=T in the t-test function (we are pretending the assumptions are met here, but t-tests are actually pretty robust to violations of normality).
+
+```{r}
+?t.test
+t.test(len ~ dose, data=pigs, alternative = "two.sided", paried=F, var.equal=T)
+```
+
+## 6. Write a one sentence conclusion of your t-test and be sure to include means, SEs, and summary statistics.
+
+## Answer: The length (pm ± SE) of odontoblasts (22.92 ± 0.82) of guinea pigs recieved a high(≥1 mg/day) dose of vitamin C were significantly longer than those (6.67 ± 1.01) of recieved a low(<1) dose by an average of 12.31 pm (t₅₈=9.05, p < 0.001)
+
+```{r}
+library(plotrix)
+pigs %>% group_by(dose) %>% summarise(means=round(mean(len),2), SE = round(std.error(len),2))
+```
+

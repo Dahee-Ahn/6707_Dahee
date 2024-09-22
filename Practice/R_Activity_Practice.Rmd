@@ -237,3 +237,51 @@ ggplot(iris, mapping=aes(x=Petal.Width))+geom_histogram(color="purple", fill="pi
 ggplot(iris, mapping=aes(x=Species, y=Petal.Width, fill=Species))+geom_boxplot()+theme_classic()+scale_fill_manual(values=c("pink","purple","red"))+theme(legend.position="none")
 ```
 
+```{r}
+library(datasets)
+library(tidyverse)
+library(dplyr)
+```
+
+```{r}
+iris_t <- iris %>% dplyr::filter(Species == c("versicolor", "virginica"))
+boxplot(Sepal.Length~Species, data=iris_t)
+```
+
+
+```{r}
+library(dplyr)
+iris_t <- iris %>% dplyr::filter(Species == c("versicolor", "virginica")) %>% droplevels()
+boxplot(Sepal.Length~Species, data = iris_t)
+stripchart(Sepal.Length~Species, data = iris_t, pch = 19, add = TRUE, vertical = TRUE, method = "jitter", jitter = 0.2)
+```
+
+```{r}
+hist(iris$Sepal.Length)
+```
+
+```{r}
+qqnorm(iris$Sepal.Length)
+```
+
+```{r}
+var_check <- iris_t %>% group_by(Species) %>% summarise(Variance = var(Sepal.Length))
+var_check$Variance[2]/var_check$Variance[1]
+```
+
+```{r}
+group1 <- iris_t$Sepal.Length[iris_t$Species == "versicolor"]
+group2 <- iris_t$Sepal.Length[iris_t$Species == "virginica"]
+t.test(group1, group2, alternative = "two.sided", paired=F, var.equal=T)
+```
+```{r}
+install.packages("plotrix")
+library(plotrix)
+iris_t %>% group_by(Species) %>% summarise(means = round(mean(Sepal.Length),2), SE = round(std.error(Sepal.Length),2))
+```
+
+##Problem!!!!!!!!! This doesn't work, why?
+```{r}
+t.test(Sepal.Length~Species, data=iris_t, alternative = "two.sided", var.equal=T)
+```
+
