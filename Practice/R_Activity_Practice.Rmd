@@ -280,8 +280,71 @@ library(plotrix)
 iris_t %>% group_by(Species) %>% summarise(means = round(mean(Sepal.Length),2), SE = round(std.error(Sepal.Length),2))
 ```
 
-##Problem!!!!!!!!! This doesn't work, why?
 ```{r}
 t.test(Sepal.Length~Species, data=iris_t, alternative = "two.sided", var.equal=T)
+```
+
+##R Activity 5
+```{r}
+ggplot(iris, mapping=aes(y=Sepal.Length, x=Species, fill=Species))+geom_boxplot()+theme_classic()+xlab("Species")+ylab("Sepal Length")
+```
+
+```{r}
+fit_1 <- lm(Sepal.Length~Species, data=iris)
+anova(fit_1)
+```
+
+```{r}
+plot(fit_1, which=c(2))
+```
+##The errors
+```{r}
+plot(fit_1, which=c(1))
+```
+
+```{r}
+fit_1_log <- lm(log(Sepal.Length)~Species, data=iris)
+plot(fit_1_log, which=c(2))
+```
+
+```{r}
+plot(fit_1_log, which=c(1))
+```
+
+```{r}
+install.packages("emmeans")
+library(emmeans)
+emmeans(fit_1, pairwise~Species)
+```
+```{r}
+install.packages("multcomp")
+library(multcomp)
+tukey_fit_1 <- glht(fit_1, linfct=mcp(Species="Tukey"))
+summary(tukey_fit_1)
+```
+
+```{r}
+library(plotrix) #for std.error function
+```
+
+```{r}
+iris %>% group_by(Species) %>% summarise(means = mean(Sepal.Length), SE = std.error(Sepal.Length))
+```
+
+## Chi-squared analysis
+```{r}
+iris$size <- ifelse(iris$Sepal.Length < median(iris$Sepal.Length), "small", "big")
+table(iris$Species, iris$size)
+ggplot(iris)+aes(x=Species, fill=size)+geom_bar()+theme_bw()
+chisq_test_1 <- chisq.test(table(iris$Species, iris$size))
+chisq_test_1
+install.packages("corrplot")
+library(corrplot)
+chisq_test_1
+corrplot(chisq_test_1$residuals, is.cor = FALSE)
+```
+## Linear Models - refer to R_Activity_Assignment_4
+```{r}
+summary(pigs)
 ```
 

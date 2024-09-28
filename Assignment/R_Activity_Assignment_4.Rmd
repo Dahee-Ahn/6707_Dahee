@@ -24,9 +24,8 @@ library(ggplot2)
 pigs <- read.table("C:/Users/chemk/OneDrive/Desktop/Classes/ENT6707_DataAnalysis/week5/pig_teeth.csv", header = TRUE, sep =",")
 head(pigs)
 tail(pigs)
-summary(pigs)
 pigs$dose <- as.factor(pigs$dose)
-summary(pigs$dose)
+summary(pigs)
 ```
 
 ## 2. We are going to compare len (length of the cells) by dose levels. First, we need to graph the data (if possible, always always always graph your data before analyzing it!). Make a boxplot with ggplot2 with Length of cells as the y-axis and Dose on the x-axis. Use the theme theme_classic().
@@ -66,5 +65,25 @@ t.test(len ~ dose, data=pigs, alternative = "two.sided", paried=F, var.equal=T)
 ```{r}
 library(plotrix)
 pigs %>% group_by(dose) %>% summarise(means=round(mean(len),2), SE = round(std.error(len),2))
+```
+
+## Linear model
+```{r}
+summary(pigs)
+```
+## Linear model: t-test
+```{r}
+t.test(len~dose, data=pigs, alternative="two.sided", var.equal=T)
+```
+
+## Linear model: ANOVA
+```{r}
+fit_anova <- lm(len~dose, data=pigs)
+anova(fit_anova)
+```
+## Linear model: regression
+```{r}
+fit_regress <- lm(len~dose, data=pigs)
+summary(fit_regress)
 ```
 
