@@ -348,3 +348,280 @@ corrplot(chisq_test_1$residuals, is.cor = FALSE)
 summary(pigs)
 ```
 
+## Randomized complete block and latin square
+```{r}
+install.packages("car")
+install.packages("lme4")
+install.packages("lmerTest")
+install.packages("agricolae")
+library(car)
+library(lme4)
+library(lmerTest)
+library(tidyverse)
+library(agricolae)
+library(emmeans)
+```
+
+## Randomized complete block
+```{r}
+trefoil <- read.table("C:/Users/chemk/OneDrive/Desktop/Classes/ENT6707_DataAnalysis/week7/Supplemental_RCB/Trefoil.txt", header=T, sep="\t", colClasses = c("factor", "factor", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"))
+head(trefoil)
+summary(trefoil)
+```
+## wide vs. long format
+```{r}
+trefoil_long <- trefoil %>% pivot_longer(cols = starts_with("Pop"), names_to = "Population", values_to = "PlantWeight")
+head(trefoil_long)
+```
+## aov()
+```{r}
+fit_aov_RCB <- aov(PlantWeight ~ Rep + Population, data=trefoil_long) # dependent variable ~ independent variable
+summary(fit_aov_RCB)
+```
+## lm()
+```{r}
+fit_lm_RCB <- lm(PlantWeight ~ Rep + Population, data=trefoil_long)
+Anova(fit_lm_RCB, type="III")
+```
+
+## Mixed-effects model
+```{r}
+fit_lmer_RCB <- lmer(PlantWeight ~ Population + (1|Rep), data=trefoil_long)
+anova(fit_lmer_RCB, type=3)
+```
+
+## Pairwise comparisons
+```{r}
+emmeans(fit_lmer_RCB, pairwise~"Population")
+```
+
+## Latin squares
+```{r}
+sheep <- read.table("C:/Users/chemk/OneDrive/Desktop/Classes/ENT6707_DataAnalysis/week7/Supplemental_RCB/sheep.csv", header=T, sep=",", colClasses = c("factor", "factor", "factor", "factor", "numeric"))
+summary(sheep)
+```
+## aov() 분산 분석(ANOVA, Analysis of Variance)
+```{r}
+fit_aov_LS <- aov(digest ~ square + square/sheep + square/time + letter, data=sheep)
+summary(fit_aov_LS)
+```
+
+# lm()
+```{r}
+fit_lm_LS <- lm(digest ~ square + square/sheep + square/time + letter, data=sheep)
+anova(fit_lm_LS)
+```
+
+## Mixed-effects model
+```{r}
+fit_lmer_LS <- lmer(digest ~ letter + (1|square/sheep) + (1|square:time), data=sheep)
+anova(fit_lmer_LS, type=3)
+summary(fit_lmer_LS)
+```
+
+## Pairwise comparisons
+```{r}
+emmeans(fit_lmer_LS, pairwise~"letter")
+```
+
+## R activity
+```{r}
+seed_df <- read.table("C:/Users/chemk/OneDrive/Desktop/Classes/ENT6707_DataAnalysis/week7/Supplemental_RCB/EPP_seed.txt", header=T, sep="\t", colClasses=c("factor", "factor", "factor", NA))
+summary(seed_df)
+ggplot(seed_df, aes(x=tillage, y=yield, fill=herbicide)) + geom_boxplot() + theme_bw()
+```
+
+```{r}
+lm_seed_1 <- lm(yield ~ rep + tillage + herbicide, data=seed_df)
+Anova(lm_seed_1, type="III")
+```
+
+```{r}
+emmeans(lm_seed_1, pairwise~tillage)
+```
+
+## Write 3-4 sentences summarizing your findings using “biologically meaningful” terms.
+
+Answer: Yield of the perennial rye grass varied significantly between tillage treatments (F1,12 = 31.29, p < 0.0001) but herbicide had no effect (F1,12 = 0.37, p = 0.55), indicating that quackgrass is best managed by altering tillage. A pairwise comparison between tillage options indicated that tilling/seeding in spring sigificantly reduced yield by approx. 48g and 53g compared with tilling/seeding in fall (t12 = 6.55, p = 0.0001) and no tilling/fall seeding (t12 = 7.12, p < 0.0001). Treatments using fall seeding did not differ (t12 = −0.57, p = 0.84). Taken together, tillage and seeding should be completed in fall.
+
+## Split plots
+```{r}
+oats_df <- read.table("C:/Users/chemk/OneDrive/Desktop/Classes/ENT6707_DataAnalysis/week7/Supplemental_SplitPlot/oats.txt", header=T, sep="\t", colClasses = c("factor", "factor", "factor", "factor", "numeric"))
+summary(oats_df)
+ggplot(oats_df, aes(x=Nitrogen, y=Yield, fill=Nitrogen)) + geom_boxplot() + theme_bw() + xlab("Year") + ylab("Yield") + facet_wrap(~Variety) + ggtitle("Split plot: Variety (whole plot)  \n and Nitrogen (subplot)")
+```
+
+## Agricolae package
+```{r}
+library(agricolae)
+sp.plot(oats_df$Block, oats_df$Variety, oats_df$Nitrogen, oats_df$Yield)
+```
+
+## aov
+```{r}
+fit_aov_SP <- aov(Yield~Variety*Nitrogen + Error(Block/Variety), data=oats_df)
+summary(fit_aov_SP)
+```
+
+## Mixed-effects model
+```{r}
+fit_lmer_SP <- lmer(Yield ~ Variety*Nitrogen + (1|Block) + (1|Block:Variety), data=oats_df)
+anova(fit_lmer_SP, type=3)
+emmeans(fit_lmer_SP, pairwise~"Nitrogen") # pairwise comparisons
+```
+
+## Split-split splot
+```{r}
+june_df <- read.table("C:/Users/chemk/OneDrive/Desktop/Classes/ENT6707_DataAnalysis/week7/Supplemental_SplitPlot/EPP_junegrass.txt", header=T, sep="\t", colClasses = c("factor", "factor", "factor", "factor", "numeric", "numeric", "numeric"))
+summary(june_df)
+library(ggplot2)
+ggplot(june_df, aes(x=Variety, y=Plant_Height, fill=Growth_Regulator)) + geom_boxplot() + theme_bw() + xlab("Variety") + ylab("Plant Height (cm)") + facet_grid(Growth_Regulator~Fertility) + ggtitle("Split-split plot: Fertility (whole plot) \n Growth regulator (subplot) \n Variety (sub-subplot)") +  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+## Agricolae package
+```{r}
+ssp.plot(june_df$Rep, june_df$Fertility, june_df$Growth_Regulator, june_df$Variety, june_df$Plant_Height)
+```
+
+## aov()
+```{r}
+fit_aov_SSP <- aov(Plant_Height ~ Rep + Fertility*Growth_Regulator*Variety + Error(Rep/Fertility/Growth_Regulator), data=june_df)
+summary(fit_aov_SSP)
+```
+## Mixed-effect model
+```{r}
+fit_lmer_SSP <- lmer(Plant_Height ~ Fertility*Growth_Regulator*Variety + (1|Rep) + (1:Rep:Fertility) + (1:Rep:Fertility:Growth_Regulator), data=june_df)
+anova(fit_lmer_SSP, type=3)
+```
+## Pairwise comparisons
+```{r}
+emmeans(fit_lmer_SSP, pairwise~Variety)
+```
+
+## The effect of nitrogen fertilizer on yield (grams) from three varieties of wheat
+```{r}
+yield_df <- read.table("C:/Users/chemk/OneDrive/Desktop/Classes/ENT6707_DataAnalysis/week7/Supplemental_SplitPlot/EPP_yield.txt", header=T, sep="\t", colClasses= c("factor", "factor", NA, NA, NA))
+summary(yield_df)
+```
+
+```{r}
+yield_df_long <- yield_df %>% pivot_longer(cols = starts_with("Rep"), names_to = "Rep", values_to = "Yield")
+summary(yield_df_long)
+```
+
+```{r}
+ggplot(yield_df_long, aes(x=Variety, y=Yield, fill=Variety)) + geom_boxplot() + theme_bw() + xlab("Variety") + ylab("Yield (grams)") + facet_wrap(~Nitrogen, ncol=5)
+```
+
+```{r}
+aov_yield_1 <- aov(Yield ~ Rep + Nitrogen + Variety + Error(Rep/Nitrogen), data=yield_df_long)
+summary(aov_yield_1)
+```
+
+```{r}
+lmer_yield_1 <- lmer(Yield ~ Nitrogen + Variety + (1|Rep) + (1|Rep:Nitrogen), data=yield_df_long)
+anova(lmer_yield_1, type=3)
+emmeans(lmer_yield_1, pairwise~Nitrogen)
+emmeans(lmer_yield_1, pairwise~Variety)
+```
+## Write 4-5 sentences comparing the conclusions from the two approaches (i.e., using aov() vs. lmer()) including conclusions drawn from any pairwise comparisons you conducted. At least 1-2 of your sentences should include a conclusion written in “biologically meaningful” terms.
+
+Answer: The analyses using aov() and lmer() were equivalent in terms of sums of squares and mean squares, but the F-values differed (FYI: it’s due to the differences in residual degrees of freedom). Yield varied across nitrogen levels (F4,38 = 17.19, p < 0.0001) and between varieties (F2,38 = 97.87, p < 0.0001).
+Pairwise comparisons indicated that variety 3 produced a higher yield than variety 1 (Tukey's range test (TRT): t28 = 13.86, p < 0.0001) or variety 2 (TRT: t28 = 8.60, p < 0.0001). Even though nitrogen applications of 160 kg/ha were associated with the highest yield, yield at that rate did not differ from yield at applications 80 kg/ha (TRT: t8 = 1.03, p = 0.84); thus, to maximize yield, plant variety 3 should be planted and returns on yield from nitrogen applications beyond 80-100 kg/ha might be considered negligible.
+
+
+## Transformations and Curvilinear Models (Week 8)
+```{r}
+fit_trees_1 <- lm(Volume~Girth, data=trees) 
+summary(fit_trees_1)
+```
+
+```{r}
+plot(fit_trees_1, which=c(1,2))
+```
+
+## A log or square-root transformation of the response variable can often help with correcting issues of normality and heteroscedasticity.
+```{r}
+fit_trees_log_1 <- lm(log(Volume)~Girth, data=trees)
+summary(fit_trees_log_1)
+plot(fit_trees_log_1, which=c(1,2))
+```
+
+## If we wanted to plot the line from our model with a log-transformation onto the graph, we would need to back-transform our predictions.
+```{r}
+new_data <- data.frame(Girth = seq(8, 21, 0.01))
+new_data$Predicted_trees_lm <- predict(fit_trees_1, newdata=new_data)
+new_data$Predicted_trees_lm_log <- exp(predict(fit_trees_log_1, newdata=new_data))
+library(tidyverse)
+ggplot(data=trees, mapping=aes(x=Girth, y=Volume))+geom_point()+theme_classic()+geom_line(data=new_data, aes(x=Girth, y=Predicted_trees_lm), linewidth=1)+geom_line(data=new_data, aes(x=Girth, y=Predicted_trees_lm_log), color="tomato1", linewidth=1)
+```
+
+## If on initial plotting or in the residual plots you notice some curvature, a curvilinear model might provide a better fit.
+```{r}
+fit_trees_poly <- lm(Volume~Girth + I(Girth^2), data=trees)
+summary(fit_trees_poly)
+plot(fit_trees_poly, which=c(1,2))
+```
+
+## Here is a plot comparing our three fits. When you transform either your response or predictor, the interpretation of the model changes, log=yellow, second order term = blue. 
+```{r}
+new_data <- data.frame(Girth=seq(8,21,0.01)
+new_data$Pred_lm <- predict(fit_trees_1, newdata=new_data)
+new_data$Pred_log <- exp(predict(fit_trees_log_1, newdata=new_data))
+new_data$Pred_poly <- predict(fit_trees_poly, newdata=new_data)
+ggplot(data=trees, mapping=aes(x=Girth, y=Volume))+geom_point()+theme_classic()+geom_line(data=new_data, aes(x=Girth, y=Pred_lm), linewidth=1.2)+geom_line(data=new_data, aes(x=Girth, y=Pred_log), color="yellow", linewidth=1.2)+geom_line(data=new_data, aes(x=Girth, y=Pred_poly), linetype="dashed", linewidth=1.2, color="blue")
+```
+
+## R Activity 6 Simple Linear Regression Practice / Fitting the model
+```{r}
+OT <- Orange[Orange$Tree == 1,]
+ggplot(data=OT, mapping=aes (x=age, y=circumference))+geom_point()+theme_classic()+scale_y_continuous(limits = c(0,200), breaks=seq(0,200,by=50))+scale_x_continuous(limits=c(0,1600), breaks=seq(0,1500, by=300), expand=c(0,0))
+```
+## The circumference of our study tree increased with age such that a 1 unit increase in age was associated with ~0.08 unit increase in circumference.
+```{r}
+fit_oranges_1 <- lm(circumference~age, data=OT)
+summary(fit_oranges_1)
+```
+## The bottom three lines of summary
+## Residual standard error: 8.056 on 5 degrees of freedom = Residuals : Root 5(Df)/324.5(resudual sums of squares)
+## Age t values = 12.973, 12.973^2 = F-value 168.29
+```{r}
+anova(fit_oranges_1)
+```
+## Checking assumptions
+```{r}
+plot(fit_oranges_1, which=c(1,2))
+```
+
+```{r}
+fit_oranges_log_1 <- lm(log(circumference)~age, data=OT)
+summary(fit_oranges_log_1)
+plot(fit_oranges_log_1, which=c(1,2))
+```
+
+```{r}
+qqnorm((residuals(fit_oranges_1)))
+```
+
+```{r}
+plot(residuals(fit_oranges_1)~fitted.values(fit_oranges_1), xlab="Predicted values from fit_oranges_1", ylab="Residuals")
+```
+
+```{r}
+plot(fit_oranges_1)
+```
+## Adding the fit line to a graph (Extrapolation)
+```{r}
+new_data <- data.frame(age=500)
+predicted_val <- predict(fit_oranges_1, newdata=new_data);predicted_val
+```
+
+```{r}
+new_data <- data.frame(age=seq(0,1600, 0.01))
+new_data$predicted_values <- predict(fit_oranges_1, newdata=new_data)
+head(new_data)
+```
+
+```{r}
+ggplot(data=OT, mapping=aes(x=age, y=circumference))+geom_point()+theme_classic()+geom_line(data=new_data, aes(x=age, y=predicted_values))+scale_y_continuous(limits=c(0,200), breaks=seq(0,200,by=50))+scale_x_continuous(limits=c(0,1600), breaks=seq(0,1500,by=300), expand=c(0,0))
+```
+

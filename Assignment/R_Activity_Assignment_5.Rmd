@@ -83,7 +83,11 @@ A1. The feed associated with the largest chick weight gain was Sunflower, with a
 
 Q2. Was it statistically clear that a single feed was the best for weight gain?
 
-A2. There were some significant differences in weight gain among the different types of feed, while others were not. For instance: Comparing casein and horsebean, the weight(mean ± SE) of casein was 163.38g greater than that of horsebean (Tukey's test: t65 = 6.96,p < 0.0001), indicating a statistically significant difference. However, the weight(mean ± SE) of sunflower was only 5.33g greater than that of casein (Tukey's test: t65 = 0.24,p=0.9999), indicating no significant difference. This suggests that while casein perfomed significantly better than horsebean, there was no clear evidence that sunflower was statistically superior to casein in promoting weight gain. 
+A2. There were some significant differences in weight gain among the different types of feed, while others were not. For instance: Comparing casein and horsebean, the weight(324 ± 15.8 SE) of casein was 163.38g greater than that of horsebean (Tukey's test: t65 = 6.96,p < 0.0001), indicating a statistically significant difference. However, the weight(324 ± SE) of sunflower was only 5.33g greater than that of casein (Tukey's test: t65 = 0.24,p=0.9999), indicating no significant difference. This suggests that while casein perfomed significantly better than horsebean, there was no clear evidence that sunflower was statistically superior to casein in promoting weight gain. 
+
+Feedback from Sam: Sunflower feed (324 ± 15.8 SE) was associated with the largest mean weight gain (g)
+of chicks. However, the differences between sunflower vs. meatmeal and sunflower vs. casein were
+statistically unclear (Tukey’s test: both t65 < 2.30, p > 0.22). Otherwise, sunflower feed was associated with higher weights of chicks compared with horsebean, linseed, and soybean (Tukey’s test: all t65 > 3.82, p < 0.0039).
 
 Q3. Report the necessary statistics (t-values, degrees of freedom, and p-values) to justify your conclusions.
 
