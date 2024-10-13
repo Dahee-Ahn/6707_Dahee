@@ -1,0 +1,104 @@
+---
+title: "R_Activity_Assignment_6"
+author: "Dahee Ahn"
+date: "2024-10-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. Download the loblolly_pines data set and load it into R.
+```{r}
+loblolly_trees <- read.table(file= "C:/Users/chemk/OneDrive/Desktop/Classes/ENT6707_DataAnalysis/week8/loblolly_pines.txt", header=TRUE, sep="\t")
+sum(is.na(loblolly_trees))
+str(loblolly_trees)
+head(loblolly_trees)
+tail(loblolly_trees)
+summary(loblolly_trees)
+View(loblolly_trees)
+```
+
+
+
+## 2. Create a scatter plot of height (feet) as a function of age (years) using ggplot2. 
+
+Q. IF you fit a regression of height as a function of age, what would be your guesses for the Estimates of the Intercept and slope for Age? (i.e., please complete this step without doing any formal analyses).
+
+A. The intercept would be close to 0 or exactly 0, indicating the height of seedling may be lower than 10cm (not sure for unit) or the seed may take time to germinate. From the graph below, it can be seen that height increases with age, particularly rapidly from ages 5 to 20, but the growth slows down from ages 20 to 25. Therefore, based on my estimation, the growth rate(slope) may continue to decelerate as age increases.
+
+```{r}
+library(ggplot2)
+ggplot(data=loblolly_trees, mapping=aes(x=age, y=height))+geom_point()+theme_classic()+scale_y_continuous(limits=c(0,100), breaks = seq(0, 100, by = 10))+scale_x_continuous(limits=c(0,30), breaks=seq(0,40, by=5), expand=c(0,0))
+```
+
+
+
+
+## 3. Fit a simple linear regression of height as a function of age. Name this model fit_linear.
+```{r}
+fit_linear <- lm(height~age, data=loblolly_trees)
+summary(fit_linear)
+```
+
+
+
+
+## 4. According to fit_linear, how tall is the average loblolly pine at 0 years old? What about 15 years old? What does the model tell you about the average height gained per year by loblolly pines?
+
+A1. Average height of loblolly pine at 0 years old : -1.312 (cm)
+
+A2. Average height of loblolly pine at 15 years old : y = b + mx, y = -1.3 + (2.6 × 15), y = 37.7 (cm)
+
+A3. It tells me the average height gained per year by loblolly pines is approximately 2.6, according to the Estimate of age.
+
+
+
+
+
+## 5. Provide a residual and a Q-Q plot for fit_linear. Do the residuals look normally distributed and homoscedastic? Are you happy with how well the model fits the data? Explain your reasoning.
+```{r}
+qqnorm((residuals(fit_linear)))
+```
+
+A. In Q-Q plot, the points are closely aligned along the diagonal line and do not deviate significantly, suggesting that they follow a normal distribution.
+
+```{r}
+plot(residuals(fit_linear)~fitted.values(fit_linear), xlab="Predicted values from fit_linear", ylab="Residuals")
+```
+
+A. According to the result of the residual plot, the residuals appear to be normally distributed around the X-axis and Y-axis. However, the uneven clustering and the hump-shaped pattern suggest a violation of the assumption.
+
+
+
+
+## 6. Fit the same model as fit_linear but add a polynomial term for age (i.e., a quadractic or squared version of age). Name this new model fit_poly (coding hint: see the supplemental document “Transformations and Curvilinear Models”).
+```{r}
+fit_poly <- lm(height~age + I(age^2), data=loblolly_trees)
+summary(fit_poly)
+plot(fit_poly, which=c(1,2))
+```
+
+
+
+## 7. Look at the residuals of fit_poly. Do they look normally distributed and homoscedastic? You don’t need to provide diagnostic graphs.
+
+A. Q-Q plot looks distributed better than the previous one. In this polynomial graph, the hump shaped pattern disappears while there are still some clustering points of the residuals. Overall, the residual plot looks unbiased and heteroscedastic.
+
+
+
+
+## 8. Reproduce the plot you created above of height as a function of age and add fit lines from fit_linear and fit_poly to the graph (i.e., your graph should have two lines overlaid on the cloud of raw data points). Color the line from fit_poly as your favorite color.
+```{r}
+new_data <- data.frame(age= seq(0, 30, 5))
+new_data$Pred_lm <- predict(fit_linear, newdata=new_data)
+new_data$Pred_poly <- predict(fit_poly, newdata=new_data)
+```
+
+```{r}
+library(ggplot2)
+ggplot(data=loblolly_trees, mapping=aes(x=age, y=height))+geom_point()+theme_classic()+geom_line(data=new_data, aes(x=age, y=Pred_lm), linewidth=1.2) + geom_line(data=new_data, aes(x=age, y=Pred_poly), linetype="dashed", color="skyblue", linewidth=1.2)
+```
+
+
