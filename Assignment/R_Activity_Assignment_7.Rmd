@@ -1,0 +1,72 @@
+---
+title: "R_Activity_Assignment_7"
+author: "Dahee Ahn"
+date: "2024-10-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+rm(list=ls())
+```
+
+# 1. Load in the glucose_df.txt dataset.
+```{r}
+glucose_txt <- read.table("C:/Users/chemk/OneDrive/Desktop/Classes/ENT6707_DataAnalysis/week9/glucose_df.txt", header = TRUE, sep = "\t")
+nrow(glucose_txt)
+str(glucose_txt)
+head(glucose_txt)
+tail(glucose_txt)
+summary(glucose_txt)
+```
+
+# 2. Create a grouped boxplot of glucose as a function of drug and animal. Use any colors you want, but make sure to overlay the raw data points on top of your boxes. Based on eyeballing the plot, provide a 1-2 sentence description of any pattern(s).
+```{r}
+library(ggplot2)
+ggplot(glucose_txt, aes(x= drug, y = glucose, fill = animal)) + geom_boxplot()+ geom_jitter()+ theme_classic()+scale_fill_manual(values=c("yellow", "skyblue"))
+```
+
+Overall, the animals that received a drug injection of slaframine in saline had higher blood glucose levels. Additionally, the effect of the drug appeared significant in sheep when compared control and treatment, while it did not show a substantial difference in goats.
+
+
+# 3. We are interested in quantifying variation in glucose (our response variable). Note that we could analyze these data in the “historical” way by fitting rep (the column for blocks) as a so-called “fixed effect” (i.edic., as a regular old pretor). Next week, you will get practice fitting mixed-effects models, in which rep would be fit as a so-called “random intercept” or “random effect”. Do not worry, as I will also further explain the terms fixed, random, and mixed-effect next week. However, for this week, we are going to simplify things: ignore rep and just fit animal, drug, and their interaction (animal × drug) as the predictors (again, we are ignoring the diet column).
+```{r}
+fit_glucose_interaction <- lm(glucose~drug*animal, data=glucose_txt)
+summary(fit_glucose_interaction)
+```
+
+# 4. Run an Anova() on the model and ensure you are using marginal fits (Type III sums of squares).
+```{r}
+library(car)
+fit_ex1 <- lm(glucose~drug+animal+animal*drug, data=glucose_txt)
+Anova(fit_ex1, type="III")
+```
+Different method
+```{r}
+fit_ex_SS <- lm(glucose~animal+drug+drug*animal, data=glucose_txt)
+Anova(fit_ex_SS, type="III")
+```
+
+# 5. Conduct a pairwise comparisons of the interaction term.
+```{r}
+library(emmeans)
+fit_manova <- lm(glucose~animal+drug+drug*animal, data=glucose_txt)
+anova(fit_manova)
+summary(fit_manova)
+```
+
+```{r}
+manova_emm <- emmeans(fit_manova, ~drug*animal)
+pairs(manova_emm)
+```
+
+# 6. Write 3-4 sentences interpreting the results of your analyses. Please try to write in biological terms, not statistical, but make sure to include the relevant summary statistics for any claims you make.
+
+1. There was no significant difference between the goats that received slaframine in saline and those that received only saline, while the sheep in the control group had a 23.50 mg/dl higher blood glucose level than those that received slaframine (p < 0.0001).
+
+2. Goats in the control group had a 18.19 mg/dl (p < 0.0001) higher blood glucose level than sheep injected with slaframine, while goats in the treatment group had a 6.58 mg/dl (p = 0.01) higher blood glucose level than sheep in the control group.
+
+3. Goats in the treatment group had a 16.92 mg/dl (p < 0.0001) lower blood glucose level than sheep in the treatment group. However, goats in the control group had a higher blood glucose level than sheep in the control group, although this difference was not significant (p = 0.06).
+ 

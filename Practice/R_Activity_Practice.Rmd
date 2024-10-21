@@ -625,3 +625,127 @@ head(new_data)
 ggplot(data=OT, mapping=aes(x=age, y=circumference))+geom_point()+theme_classic()+geom_line(data=new_data, aes(x=age, y=predicted_values))+scale_y_continuous(limits=c(0,200), breaks=seq(0,200,by=50))+scale_x_continuous(limits=c(0,1600), breaks=seq(0,1500,by=300), expand=c(0,0))
 ```
 
+## Week 9 Practice
+
+
+Fitting a MLR (Multiple linear regression) model
+```{r}
+library(datasets)
+fit_plants_1_nointeraction <- lm(uptake~conc+Type, data=CO2)
+anova(fit_plants_1_nointeraction)
+```
+
+```{r}
+summary(fit_plants_1_nointeraction)
+```
+
+```{r}
+library(tidyverse)
+library(sjPlot)
+library(sjmisc)
+plot_model(fit_plants_1_nointeraction, type="pred", terms= c("conc", "Type")) + theme_classic()
+```
+
+Interactions (=/ collinearity)
+```{r}
+fit_plants_1_interaction <- lm(uptake~conc*Type, data=CO2)
+anova(fit_plants_1_interaction)
+```
+
+```{r}
+summary(fit_plants_1_interaction)
+```
+```{r}
+plot_model(fit_plants_1_interaction, type="pred", terms=c("conc", "Type"))+theme_classic()
+```
+
+##Multiple Anova (MANOVA)
+```{r}
+fit_manova <- lm(uptake~Treatment+Type+Treatment*Type, data=CO2)
+anova(fit_manova)
+```
+Also note that instead of Treatment+Type+Treatment*Type, I could have written Treatment*Type and the same model would have been fit
+```{r}
+fit_mmanova <- lm(uptake~Treatment*Type, data=CO2)
+anova(fit_mmanova)
+```
+
+```{r}
+summary(fit_manova)
+```
+Estimating the means of our different treatment groups
+```{r}
+CO2 %>% group_by(Treatment, Type) %>% summarise(means = round(mean(uptake), 3)) %>% as.data.frame()
+```
+
+## Multiple comparisons in MLR
+
+```{r}
+library(emmeans)
+```
+5.1 No interaction, one categorical and one continuous predictor
+```{r}
+no_interaction_emm <- emmeans(fit_plants_1_nointeraction, ~Type)
+pairs(no_interaction_emm)
+```
+
+5.2 Interaction between a categorical and a continuous predictor. Note that this is comparing the slopes of the uptake ~ conc relationship between the Quebec group and Mississippi group. So, the slope of uptake ~ conc is steeper by 0.0107 for the Quebec plants.
+```{r}
+fp_inter_emm <- emtrends(fit_plants_1_interaction, "Type", var= "conc")
+pairs(fp_inter_emm)
+```
+
+5.3 No interaction, two categorical predictor
+```{r}
+fit_manova_no_interaction <- lm(uptake~Treatment+Type, data=CO2)
+fit_manova_no_interaction_emm <- emmeans(fit_manova_no_interaction, ~Treatment)
+pairs(fit_manova_no_interaction_emm)
+```
+5.4 Interaction between two categorical predictors
+```{r}
+manova_emm <- emmeans(fit_manova, ~Treatment*Type)
+pairs(manova_emm)
+```
+
+## Sequential vs, marginal fitting
+
+
+##Sequential fitting
+```{r}
+library(datasets)
+data(grouseticks)
+grouseticks$f_YEAR <- as.factor(grouseticks$YEAR)
+fit_ex1 <- lm(TICKS ~ f_YEAR + HEIGHT, data=grouseticks)
+anova(fit_ex1)
+```
+```{r}
+fit_ex2 <- lm(TICKS ~ HEIGHT + f_YEAR, data=grouseticks)
+anova(fit_ex2)
+```
+
+##Marginal fitting
+
+```{r}
+library(car)
+```
+When f_YEAR is listed first
+```{r}
+Anova(fit_ex1, type="III")
+```
+
+Wehn HEIGHT is listed first
+```{r}
+Anova(fit_ex2, type="III")
+```
+
+## Type 2 Sums of Squares
+```{r}
+fit_ex_SS <- lm(TICKS ~ f_YEAR + HEIGHT + f_YEAR*HEIGHT, data=grouseticks)
+Anova(fit_ex_SS, type="II")
+```
+
+## Type 3 Sums of Squares
+```{r}
+Anova(fit_ex_SS, type="III")
+```
+
