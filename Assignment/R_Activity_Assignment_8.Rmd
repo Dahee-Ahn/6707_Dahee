@@ -1,0 +1,68 @@
+---
+title: "R_Activity_Assignment_8"
+author: "Dahee Ahn"
+date: "2024-10-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#
+In this study, two animal species (goats or sheep) were fed one of three diets (control, alfalfa hay, and cottonseed meal) and received a drug injection (slaframine in saline or just saline). The 12 treatments were assigned in a randomized complete block design with twelve blocks (replications). So, each combination of animal × diet × drug combination appears twelve times. For this activity we are ONLY going to look at the effects of drug (and reps) on glucose blood levels.
+ 
+# 1. Load in the glucose_df.txt dataset.
+```{r}
+glucose_txt <-read.table(file="C:/Users/chemk/Desktop/Classes/ENT6707_DataAnalysis/week10/glucose_df.txt", header=TRUE, sep="\t")
+nrow(glucose_txt)
+str(glucose_txt)
+head(glucose_txt)
+tail(glucose_txt)
+summary(glucose_txt)
+```
+
+# 2. Graph glucose as a function of drug. Color each point by the variable rep and change the axis labels to “Glucose (mg/dl)” and “Drug”.
+```{r}
+library(ggplot2)
+ggplot(data=glucose_txt, aes(x=drug, y=glucose, color=as.factor(rep)))+geom_point()+theme_classic()+labs(x="Drug", y="Glucose (mg/dl)", color="Rep")
+```
+
+# 3. Fit a fixed-effects only model of glucose as a function of rep and drug. Provide a summary() of the model.
+```{r}
+library(lme4)
+f_model <- lm(glucose~rep+drug, data=glucose_txt)
+summary(f_model)
+```
+
+# 4. Fit a linear mixed-effects model of glucose as a function of drug. Include a term for rep as a random intercept. Provide a summary() of the model and check the assumptions (please provide proof you conducted diagnostics and ensure the summary output has p-values). Are you satisfied the assumptions are met? Why or why not?
+
+In the residual plot, the residuals appear to be normally distributed around both the X-axis and Y-axis. However, there are some clustered points and an empty central area that might suggest a violation of the assumption. In the Q-Q plot, the points are closely aligned along the diagonal line, indicating that they follow a normal distribution. Additionally, in the random effects Q-Q plot, the points also align closely along the diagonal line and do not deviate significantly. Overall, I believe the assumptions are well met.
+
+```{r}
+library(lme4)
+library(lmerTest)
+m_model <- lmer(glucose~drug+(1|rep), data=glucose_txt)
+summary(m_model)
+```
+```{r}
+plot(m_model) # To check the assumptions
+```
+```{r}
+qqnorm(residuals(m_model))
+```
+
+```{r}
+ranef_glucose <- ranef(m_model)$rep # To check normality of rep random effect
+qqnorm(ranef_glucose$'(Intercept)')
+qqline(ranef_glucose$'(Intercept)', col="red")
+```
+```{r}
+hist(ranef_glucose$`(Intercept)`)
+```
+
+# 5. Write one sentence comparing the conclusions one would draw from each model and one sentence interpreting the mixed-effects model.
+A1) In comparing the conclusions from each model, both indicate that the drug slaframine has a significant effect on glucose levels; however, the mixed effects model provides more reliable results by accounting for variability among replicates.
+
+A2) The mixed effects model suggests that slaframine treatment increases glucose levels by approximately 12.39 mg/dl.
+
