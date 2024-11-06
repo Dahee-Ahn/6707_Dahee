@@ -9,6 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Sam Feedback - note that "rep" should have been converted to a factor but was left as numeric (e.g., in your lm() model, it is being treated as a continuous predictor and that is why there is not an estimate for each level of rep). 
+
 #
 In this study, two animal species (goats or sheep) were fed one of three diets (control, alfalfa hay, and cottonseed meal) and received a drug injection (slaframine in saline or just saline). The 12 treatments were assigned in a randomized complete block design with twelve blocks (replications). So, each combination of animal × diet × drug combination appears twelve times. For this activity we are ONLY going to look at the effects of drug (and reps) on glucose blood levels.
  
@@ -20,12 +22,24 @@ str(glucose_txt)
 head(glucose_txt)
 tail(glucose_txt)
 summary(glucose_txt)
+glucose_txt$rep <- as.factor(glucose_txt$rep)
 ```
+```{r}
+glucose_txt$rep <- as.factor(glucose_txt$rep)
+```
+#Sam's feedback for rep!
+Also, for R activity 8, if I want to have an estimate for each level of replication, then do I need to change the numeric to a factor in any situation? (My question)
+(Sam's answer) Correct - whenever something is categorical (like rep) we need to make sure R "knows" that. This can be avoided with careful naming in the spreadsheet. So, instead of recording the reps as 1,2,3,etc....we could have recorded them as rep1, rep2, rep3, etc...and so, because "rep1" has letters, R would have defaulted to treating the associated "rep" column as a factor or character (neither of which are numeric).
 
 # 2. Graph glucose as a function of drug. Color each point by the variable rep and change the axis labels to “Glucose (mg/dl)” and “Drug”.
 ```{r}
 library(ggplot2)
-ggplot(data=glucose_txt, aes(x=drug, y=glucose, color=as.factor(rep)))+geom_point()+theme_classic()+labs(x="Drug", y="Glucose (mg/dl)", color="Rep")
+ggplot(data=glucose_txt, aes(x=drug, y=glucose, color=rep))+
+  geom_point()+
+  theme_classic()+
+  labs(x="Drug", y="Glucose (mg/dl)")+
+  theme(legend.text=element_text(size=7))+
+  theme(legend.key.size=unit(0.3,'cm'))
 ```
 
 # 3. Fit a fixed-effects only model of glucose as a function of rep and drug. Provide a summary() of the model.
@@ -38,6 +52,8 @@ summary(f_model)
 # 4. Fit a linear mixed-effects model of glucose as a function of drug. Include a term for rep as a random intercept. Provide a summary() of the model and check the assumptions (please provide proof you conducted diagnostics and ensure the summary output has p-values). Are you satisfied the assumptions are met? Why or why not?
 
 In the residual plot, the residuals appear to be normally distributed around both the X-axis and Y-axis. However, there are some clustered points and an empty central area that might suggest a violation of the assumption. In the Q-Q plot, the points are closely aligned along the diagonal line, indicating that they follow a normal distribution. Additionally, in the random effects Q-Q plot, the points also align closely along the diagonal line and do not deviate significantly. Overall, I believe the assumptions are well met.
+
+Sam's answer: Seems okay- the variance is slightly higher in the slaframine group, but not problematic enough to warrant transformations.
 
 ```{r}
 library(lme4)
@@ -66,3 +82,4 @@ A1) In comparing the conclusions from each model, both indicate that the drug sl
 
 A2) The mixed effects model suggests that slaframine treatment increases glucose levels by approximately 12.39 mg/dl.
 
+Sam's answer: The model estimates are equivalent, and thus the conclusions are generally the same. That is, injection with slaframine was associated with an increase in glucose of 12 mg/dl compared with animals injected with a saline-only solution (t131 > 7.12,p < 0.0001)

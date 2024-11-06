@@ -8,13 +8,14 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
 ```{r}
 rm(list=ls())
 ```
 
 # 1. Load in the glucose_df.txt dataset.
 ```{r}
-glucose_txt <- read.table("C:/Users/chemk/OneDrive/Desktop/Classes/ENT6707_DataAnalysis/week9/glucose_df.txt", header = TRUE, sep = "\t")
+glucose_txt <- read.table("C:/Users/chemk/Desktop/Classes/ENT6707_DataAnalysis/week9/glucose_df.txt", header = TRUE, sep = "\t")
 nrow(glucose_txt)
 str(glucose_txt)
 head(glucose_txt)
@@ -24,12 +25,46 @@ summary(glucose_txt)
 
 # 2. Create a grouped boxplot of glucose as a function of drug and animal. Use any colors you want, but make sure to overlay the raw data points on top of your boxes. Based on eyeballing the plot, provide a 1-2 sentence description of any pattern(s).
 ```{r}
+library(ggplot2) # 
+ggplot(glucose_txt, aes(x= drug, y = glucose, fill = animal)) + geom_boxplot()+  geom_jitter()+ theme_classic()+scale_fill_manual(values=c("yellow", "skyblue"))
+```
+Sam Feedback - my only feedback is that the jittering on the graph was perhaps too extreme, in that it is hard to know which points are associated with each group. on closer look...I am thinking that maybe the points are not grouped into four distinct clouds (but rather are only grouped by drug)
+
+```{r}
 library(ggplot2)
-ggplot(glucose_txt, aes(x= drug, y = glucose, fill = animal)) + geom_boxplot()+ geom_jitter()+ theme_classic()+scale_fill_manual(values=c("yellow", "skyblue"))
+ggplot(glucose_txt, aes(x= drug, y = glucose, color = animal)) + geom_boxplot(outlier.color=NA)+  geom_jitter(width = 0.2, size = 2)+ theme_classic()+scale_color_manual(values=c("blue", "red"))
+```
+Sam's feedback: Do I need to group them into four distinct clouds? I don't also understand what distinct clouds are (My comment).
+I am using "cloud of points" to refer to the data points uniquely associated with each "group" (e.g., goats/control, goats/slaframine, sheep/control, sheep/slaframine). You do need four clouds (or clusters) in this case, since we have two factors that each have two levels (i.e., there are four unique treatment combinations). The issue is not due to jittering (as I originally thought)...notice in the second plot you sent, the points are in two clouds spread across the two animals in each "drug grouping." Said another way, the red and blue points in your graph should not be overlapping. I think the additional tutorial I posted on box plots and points will also help clarify all this!
+
+```{r}
+ggplot(glucose_txt, mapping=aes(y=glucose, x=drug, fill=animal))+
+  geom_boxplot(outlier.color=NA)+
+  geom_point(position=position_jitterdodge(jitter.width=0.1), alpha=0.3)+
+  theme_classic()+
+  ylab("Glucose (mg/dl)")+
+  xlab("Drug")+
+  theme(legend.text=element_text(size=7))+
+  theme(legend.key.size=unit(0.3, 'cm'))+
+  scale_fill_manual(values=c("maroon", "gold"))
+```
+```{r}
+ggplot(glucose_txt, mapping=aes(y=glucose, x=animal, fill=drug))+
+  geom_boxplot(outlier.color=NA)+
+  geom_point(position=position_jitterdodge(jitter.width=0.1), alpha=0.3)+
+  theme_classic()+
+  ylab("Glucose (mg/dl)")+
+  xlab("Drug")+
+  theme(legend.text=element_text(size=7))+
+  theme(legend.key.size=unit(0.3, 'cm'))+
+  scale_fill_manual(values=c("maroon", "gold"))
 ```
 
+
+#My Answer
 Overall, the animals that received a drug injection of slaframine in saline had higher blood glucose levels. Additionally, the effect of the drug appeared significant in sheep when compared control and treatment, while it did not show a substantial difference in goats.
 
+# Sam's ANSWER:It seems like glucose in the goats did not change with slaframine, whereas the glucose in sheeps increased with slaframine.
 
 # 3. We are interested in quantifying variation in glucose (our response variable). Note that we could analyze these data in the “historical” way by fitting rep (the column for blocks) as a so-called “fixed effect” (i.edic., as a regular old pretor). Next week, you will get practice fitting mixed-effects models, in which rep would be fit as a so-called “random intercept” or “random effect”. Do not worry, as I will also further explain the terms fixed, random, and mixed-effect next week. However, for this week, we are going to simplify things: ignore rep and just fit animal, drug, and their interaction (animal × drug) as the predictors (again, we are ignoring the diet column).
 ```{r}
@@ -42,6 +77,7 @@ summary(fit_glucose_interaction)
 library(car)
 fit_ex1 <- lm(glucose~drug+animal+animal*drug, data=glucose_txt)
 Anova(fit_ex1, type="III")
+plot(fit_ex1)
 ```
 Different method
 ```{r}
@@ -70,3 +106,6 @@ pairs(manova_emm)
 
 3. Goats in the treatment group had a 16.92 mg/dl (p < 0.0001) lower blood glucose level than sheep in the treatment group. However, goats in the control group had a higher blood glucose level than sheep in the control group, although this difference was not significant (p = 0.06).
  
+ 
+# Sam's answer for question 6
+ANSWER: The response of glucose blood levels to slaframine varied by animal species (drug × animal interaction: F1,140 = 56.17,p < 0.0001). It appeared that sheep treated with slaframine had concentrations of glucose that were 23.5 units higher than control sheep (t140 = 11.21,p < 0.0001) and 16.9 units higher than goats treated with slaframine (t140 = 8.07,p < 0.0001). Additionally, there were no statistically clear differences in glucose levels between treated vs. control goats (t140 = 0.61,p = 0.93) and control sheep vs. control goats (t140 = 2.53,p = 0.06). Taken together, our findings seem to be driven by a positive response in glucose levels of sheep following slaframine treatment with no corresponding changes in glucose levels of goats.

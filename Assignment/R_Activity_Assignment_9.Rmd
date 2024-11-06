@@ -1,0 +1,126 @@
+---
+title: "R_Activity_Assignment_9"
+author: "Dahee Ahn"
+date: "2024-11-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+rm(list=ls())
+```
+
+# 5.1 Part A
+Let’s pretend that commercial Chilean bass cannot have a Mercury concentration higher than 0.354 (PPM). Fish above this level will be considered contaminated (and thus not marketable), whereas fish below the level will not be contaminated (= marketable). Let’s determine the probability of a fish being marketable as a function of the pH of the lake they were sourced from. This is not my area of expertise, but we are hypothesizing here that pH levels might moderate levels of mercury contamination.
+ 
+# 1. Load in the bass.txt dataset.
+```{r}
+bass <- read.table("C:/Users/chemk/Desktop/Classes/ENT6707_DataAnalysis/week11/bass.txt", header=TRUE, sep="\t")
+nrow(bass)
+str(bass)
+head(bass)
+tail(bass)
+summary(bass)
+```
+
+# 2. Using R, create a new column called marketable in which each observation of marketable is a 1 when AvgMercury is less than 0.354 and 0 otherwise (make sure marketable is numeric!). 
+```{r}
+library(tidyverse)
+bass$marketable <- ifelse(bass$AvgMercury < 0.354, 1, 0)
+class(bass$marketable)
+```
+
+
+# 3. Plot marketable as function of pH.
+```{r}
+library(ggplot2)
+ggplot(bass, mapping=aes(y=marketable, x=pH))+
+  geom_point()+
+  theme_classic()+
+  ylab("Marketable (1=Yes, 0=No)")+
+  xlab("pH")
+```
+
+  
+# 4. Fit a logistic regression modeling the effect of pH on marketable.
+```{r}
+fit_bass_logistic_1 <- glm(marketable~pH, data=bass, family=binomial(link="logit"))
+summary(fit_bass_logistic_1)
+```
+
+# 5. Reproduce the graph of marketable as a function of pH and overlay the fit/predicted line from your logistic regression.
+```{r}
+new_data<- data.frame(pH=seq(1,10, 0.001))
+new_data$Predicted_bass_logistic <- predict(fit_bass_logistic_1, newdata=new_data, type="response")
+ggplot(data=bass, mapping=aes(x=pH, y=marketable))+
+  geom_point()+
+  theme_classic()+
+  geom_line(data=new_data, aes(x=pH, y=Predicted_bass_logistic), linewidth=1)
+```
+
+# 6. Using your model, find the pH values at which there is a 50% chance of fish being marketable with mercury.
+```{r}
+library(MASS)
+dose.p(fit_bass_logistic_1, p=0.5)
+```
+
+# 7. Write 2-3 sentences interpreting the model and provide summary statistics (e.g., odds ratios, z-values) to support any claims you make about statistical significance.
+
+Answer: With a one unit increase in pH, the odds of chance of fish being marketable increase by a factor of 4.05 (z-value = 3.338, p < 0.001). The 95% confidence interval for this oadds ratio ranges from about 2.014 to 10.519, suggesting that one unit increase in pH could significantly increase marketable probability. The intercept’s significant negative value (z = -3.440, p < 0.001) suggests that at very low pH levels, the odds of marketability are low.
+
+```{r}
+round(exp(cbind(coef(fit_bass_logistic_1), confint(fit_bass_logistic_1))),3)
+```
+
+
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+
+# 5.2 Part B
+For this second part, you will analyze cricket chirps per unit of time as a function of temperature in degrees Fahrenheit.
+
+# 1. Load in the chirps.txt dataset.
+```{r}
+chirps <- read.table("C:/Users/chemk/Desktop/Classes/ENT6707_DataAnalysis/week11/chirps.txt", header=TRUE, sep="\t")
+nrow(chirps)
+str(chirps)
+head(chirps)
+tail(chirps)
+summary(chirps)
+```
+
+# 2. Plot Chirps as a function of Temperature.
+```{r}
+ggplot(chirps, aes(x=Temperature, y=Chirps))+
+  geom_point()+
+  theme_classic()+
+  ylab("Cricket Chirps per Unit of Time")+
+  xlab("Temperature (°F)")
+```
+
+# 3. Fit a poisson regression modeling Chirps as a function of Temperature.
+```{r}
+fit_chirps_poisson_1 <- glm(Chirps~Temperature, data=chirps, family=poisson(link="log"))
+summary(fit_chirps_poisson_1)
+```
+
+# 4. Reproduce the graph of Chirps as a function of Temperature and overlay the fit/predicted line from your Poisson regression.
+```{r}
+new_chirps <- data.frame(Temperature = seq(50, 90, 0.001))
+new_chirps$Predicted_Chirps_poisson <- predict(fit_chirps_poisson_1, newdata=new_chirps, type="response")
+ggplot(data=chirps, mapping=aes(x=Temperature, y=Chirps))+
+  geom_point()+
+  geom_line(data=new_chirps, aes(x=Temperature, y=Predicted_Chirps_poisson), color="lightblue")+
+  ylab("Chirps per Unit of Time")+
+  xlab("Temperature (°F)")+
+  theme_classic()
+```
+
+
+# 5. Write 1-2 sentences interpreting the results.
+
+Answer: The expected number of chirps per unit of time changes by a multiplicative factor of 1.03(= exp(0.031969)), or 3.1% increase, with an increase in 1°F increase in temperature (°F).

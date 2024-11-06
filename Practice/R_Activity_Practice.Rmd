@@ -424,6 +424,13 @@ summary(fit_lmer_LS)
 emmeans(fit_lmer_LS, pairwise~"letter")
 ```
 
+############################################################################
+############################################################################
+############################################################################
+############################################################################
+############################################################################
+############################################################################
+############################################################################
 ## R activity
 ```{r}
 seed_df <- read.table("C:/Users/chemk/OneDrive/Desktop/Classes/ENT6707_DataAnalysis/week7/Supplemental_RCB/EPP_seed.txt", header=T, sep="\t", colClasses=c("factor", "factor", "factor", NA))
@@ -570,7 +577,13 @@ new_data$Pred_log <- exp(predict(fit_trees_log_1, newdata=new_data))
 new_data$Pred_poly <- predict(fit_trees_poly, newdata=new_data)
 ggplot(data=trees, mapping=aes(x=Girth, y=Volume))+geom_point()+theme_classic()+geom_line(data=new_data, aes(x=Girth, y=Pred_lm), linewidth=1.2)+geom_line(data=new_data, aes(x=Girth, y=Pred_log), color="yellow", linewidth=1.2)+geom_line(data=new_data, aes(x=Girth, y=Pred_poly), linetype="dashed", linewidth=1.2, color="blue")
 ```
-
+############################################################################
+############################################################################
+############################################################################
+############################################################################
+############################################################################
+############################################################################
+############################################################################
 ## R Activity 6 Simple Linear Regression Practice / Fitting the model
 ```{r}
 OT <- Orange[Orange$Tree == 1,]
@@ -625,6 +638,13 @@ head(new_data)
 ggplot(data=OT, mapping=aes(x=age, y=circumference))+geom_point()+theme_classic()+geom_line(data=new_data, aes(x=age, y=predicted_values))+scale_y_continuous(limits=c(0,200), breaks=seq(0,200,by=50))+scale_x_continuous(limits=c(0,1600), breaks=seq(0,1500,by=300), expand=c(0,0))
 ```
 
+############################################################################
+############################################################################
+############################################################################
+############################################################################
+############################################################################
+############################################################################
+############################################################################
 ## Week 9 Practice
 
 
@@ -751,7 +771,14 @@ Anova(fit_ex_SS, type="III")
 
 
 
-# Activity 8: Linear Mixed-Effects Models
+############################################################################
+############################################################################
+############################################################################
+############################################################################
+############################################################################
+############################################################################
+############################################################################
+##Activity 8: Linear Mixed-Effects Models
 
 # Fitting linear mixed-effects models
 ```{r}
@@ -805,5 +832,197 @@ hist(ranef_brood$`(Intercept)`)
 ```{r}
 lmer_gaussian_slope <- lmer(circumference~age + (age|Tree), data=Orange)
 summary(lmer_gaussian_slope)
+```
+
+############################################################################
+############################################################################
+############################################################################
+############################################################################
+############################################################################
+############################################################################
+############################################################################
+## R Activity 9 Practice : Generalized Linear (Mixed-Effects) Models
+
+
+# Logistic regression (Binary)
+```{r}
+library(lme4) 
+data(grouseticks)
+grouseticks$TICK_PRES <- ifelse(grouseticks$TICKS > 0, 1, 0)
+```
+```{r}
+library(tidyverse)
+ggplot(data=grouseticks, mapping=aes(x=HEIGHT, y=TICK_PRES))+geom_point()+theme_classic()
+```
+
+```{r}
+fit_tick_logistic_1 <- glm(TICK_PRES~HEIGHT, data=grouseticks, family=binomial (link="logit"))
+summary(fit_tick_logistic_1)
+```
+```{r}
+new_data <- data.frame(HEIGHT = seq(400, 540, 0.001))
+new_data$Predicted_TICKS_logistic <- predict(fit_tick_logistic_1, newdata=new_data, type="response")
+ggplot(data=grouseticks, mapping=aes(x=HEIGHT, y=TICK_PRES))+geom_point()+theme_classic()+geom_line(data=new_data, aes(x=HEIGHT, y=Predicted_TICKS_logistic),linewidth=1)
+```
+
+## Interpretation
+```{r}
+install.packages("MASS")
+library(MASS)
+round(exp(cbind(coef(fit_tick_logistic_1), confint(fit_tick_logistic_1))), 3)
+```
+
+```{r}
+dose.p(fit_tick_logistic_1, p = c(0.05, 0.5, 0.75))
+```
+ the elevation at which we would expect a 50% chance of finding a tick on a grouse was 497.75 ± 5.55 SE.
+
+
+# Checking assumptions and other diagnostics
+```{r}
+library(dplyr)
+library(ggplot2)
+library(plotrix)
+grouseticks_new <- grouseticks %>% mutate(new_bin = cut(HEIGHT, breaks=seq(400,540, 20)))
+bins_for_plot <- grouseticks_new %>% group_by(new_bin)%>%
+  summarise(means=mean(TICK_PRES), SDs=sd(TICK_PRES))
+bins_for_plot$HEIGHT <- seq(410, 530, 20) # to ensure we can plot on same graph below
+```
+
+```{r}
+new_data <- data.frame(HEIGHT = seq(400, 540, 0.001))
+new_data$Predicted_TICKS_logistic <- predict(fit_tick_logistic_1, newdata=new_data, type="response")
+ggplot(data=grouseticks, mapping=aes(x=HEIGHT, y=TICK_PRES))+geom_point()+theme_classic()+geom_point(data=bins_for_plot, aes(x=HEIGHT, y=means), col="tomato1", size=3) + geom_errorbar(data=bins_for_plot, mapping =aes(x=HEIGHT, y=means, ymin=means-SDs, ymax=means+SDs), linewidth=1, color="tomato1", width=.4) + geom_line(data=new_data, aes(x=HEIGHT, y=Predicted_TICKS_logistic), linewidth=1)
+```
+
+
+#Analysis of Deviance
+```{r}
+anova(fit_tick_logistic_1, test="Chisq")
+```
+
+```{r}
+intercept_only <- glm(TICK_PRES~1, data=grouseticks, family=binomial(link="logit"))
+anova(intercept_only, fit_tick_logistic_1, test="Chisq")
+```
+
+# ROCs(Receiver operating characteristic curve = rock plot) and AUC (Area unver the curve)
+Making a ROC plot
+```{r}
+library(pROC)
+predicted <- predict(fit_tick_logistic_1, type="response")
+roccurve <- roc(grouseticks$TICK_PRES ~ predicted)
+ggroc(roccurve)+theme_classic()+geom_segment(aes(x=1, xend=0, y=0, yend=1), color="grey", linetype="dashed")
+```
+
+auc(roccurve)
+
+############################################################################
+#Poisson Regression (Count)
+
+```{r}
+fit_tick_poisson_1 <- glm(TICKS~HEIGHT, data=grouseticks, family=poisson(link="log"))
+summary(fit_tick_poisson_1)
+```
+
+```{r}
+new_data <- data.frame(HEIGHT = seq(400, 540, 0.001))
+new_data$Predicted_TICKS_poisson <- predict(fit_tick_poisson_1, newdata=new_data, type="response")
+ggplot(data=grouseticks, mapping=aes(x=HEIGHT, y=TICKS))+geom_point()+theme_classic()+geom_line(data=new_data, aes(x=HEIGHT, y=Predicted_TICKS_poisson), linewidth=1)
+```
+
+# Interpretation
+the expected number of ticks changes by a multiplicative factor of 0.98 (= exp(−0.0230647)), or a 2.3% decrease (= (1−0.977)×100), with an increase in 1 unit of elevation.
+
+# Checking assumptions and other diagnostics
+```{r}
+anova(fit_tick_poisson_1, test="Chisq")
+```
+#Overdispersion
+```{r}
+install.packages("AER")
+library(AER)
+deviance(fit_tick_poisson_1)/fit_tick_poisson_1$df.residual
+```
+```{r}
+dispersiontest(fit_tick_poisson_1)
+```
+
+```{r}
+library(MASS)
+fit_tick_negbin_1 <- glm.nb(TICKS~HEIGHT, data=grouseticks)
+summary(fit_tick_negbin_1)
+```
+
+# Zero-inflated Poisson
+```{r}
+install.packages("pscl")
+library(pscl)
+ZI_pois <- zeroinfl(TICKS~HEIGHT, data=grouseticks, dist="poisson")
+summary(ZI_pois)
+```
+```{r}
+AIC(fit_tick_poisson_1, ZI_pois)
+```
+
+# Zero-inflated Negative Binomial
+```{r}
+ZI_negbin <- zeroinfl(TICKS~HEIGHT, data=grouseticks, dist="negbin")
+summary(ZI_negbin)
+```
+###########################################################################
+# Fitting an offset variable
+```{r}
+beetles <- read.csv("C:/Users/chemk/Desktop/Classes/ENT6707_DataAnalysis/week11/examples/completely_fabricated_data/beetles.csv")
+summary(beetles)
+```
+
+```{r}
+set.seed(123)
+beetles$woodlot_size <- runif(nrow(beetles), 1,2)
+summary(beetles)
+```
+
+```{r}
+fit_beetles_a <- glm(ELB/woodlot_size~temperature, data=beetles, family=poisson(link=log))
+summary(fit_beetles_a)
+```
+#Use an offset vaiable, ensuring our response variable remains as an integer.
+```{r}
+fit3b <- glm(ELB~temperature + offset(woodlot_size),data=beetles,family=poisson(link=log))
+summary(fit3b)
+```
+
+```{r}
+fit3c <- glm(ELB~temperature + woodlot_size, data=beetles, family=poisson(link=log))
+summary(fit3c)
+```
+
+#####################################################################################
+#Generalized linear mixed-effects models
+```{r}
+grouseticks$TICK_PRES <- ifelse(grouseticks$TICKS > 0, 1, 0)
+library(lme4)
+glmer_binomial <- glmer(TICK_PRES ~ cHEIGHT + (1|BROOD), data=grouseticks, family=binomial(link="logit"))
+summary(glmer_binomial)
+```
+
+#Plotting mixed effects logistic regression
+```{r}
+new_data_me <- data.frame(cHEIGHT=seq(-60, 71, 0.001))
+new_data_me$Predicted_TICKS_logistic <- predict(glmer_binomial, newdata=new_data_me, type="response", re.form=NA)
+ggplot(data=grouseticks, mapping=aes(x=cHEIGHT, y=TICK_PRES))+geom_point()+theme_classic()+geom_line(data=new_data_me, aes(x=cHEIGHT, y=Predicted_TICKS_logistic), linewidth=1)
+```
+
+# Poisson response variables
+```{r}
+glmer_poisson <- glmer(TICKS~cHEIGHT + (1|BROOD), data=grouseticks, family=poisson(link="log"))
+summary(glmer_poisson)
+```
+# Plotting mixed effects Poisson regression
+```{r}
+new_data_pois_me <- data.frame(cHEIGHT = seq(-60, 71, 0.001))
+new_data_pois_me$Predicted_TICKS_poisson <- predict(glmer_poisson, newdata=new_data_pois_me, type="response", re.form=NA)
+ggplot(data=grouseticks, mapping=aes(x=cHEIGHT, y=TICKS))+geom_point()+theme_classic()+geom_line(data=new_data_pois_me, aes(x=cHEIGHT, y=Predicted_TICKS_poisson), linewidth=1)
 ```
 
