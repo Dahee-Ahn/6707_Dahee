@@ -1,0 +1,156 @@
+---
+title: "R_Activity_11"
+author: "Dahee Ahn"
+date: "2024-11-21"
+output: html_document
+---
+```{r}
+rm(list=ls())
+install.packages("vegan")
+library(vegan)
+library(reshape2)
+library(dplyr)
+```
+
+## 1. We will use another open source data set from the NSF Harvard Forest Long-term Ecological Research (LTER) site. These data are spiders collected in the Hemlock Removal Experiment. Remember, this experiment includes four treatments (Hemlock girdled, Hemlock logged, Hemlock control, and Hardwood control) each replicated across two (n = 2) 90 x 90 m plots. Load the HarvardForest_spiders data into R. We will characterize spider communities among these four treatments. Load the HarvardForest_HerbLayer data into R. We will also assess the relationship among spiders and under story plants.
+```{r}
+spiders <- read.csv(file="C:/Users/chemk/Desktop/Classes/ENT6707_DataAnalysis/week14/Data/HarvardForest_spiders.csv", header=T, na.strings=c("", ".", "NA"))
+herb <- read.csv(file="C:/Users/chemk/Desktop/Classes/ENT6707_DataAnalysis/week14/Data/HarvardForest_HerbLayer.csv", header=T, na.strings=c("", ".", "NA"))
+```
+
+```{r}
+View(spiders)
+head(spiders)
+tail(spiders)
+summary(spiders)
+str(spiders)
+```
+
+```{r}
+View(herb)
+head(herb)
+tail(herb)
+summary(herb)
+str(herb)
+```
+
+## 2. Before running any analyses, you will have to do some data wrangling. First, create a new variable abundance by summing the counts of adult male and female spiders. Next, change the data set from long format to wide format using spider genus as the taxonomic resolution (i.e., each column should be a spider genus). Be sure that the new data frame includes the predictor variables. Then, remove any columns that do not have count data (some genera are indicated as immatures with imm), as well as three columns with unidentified spiders (LinytoID, LinyToID, and unk_toID). Change the variables treatment and sampling method to factors. Calculate a dissimilarity matrix for the spider data using the bray-curtis method. Provide the distance matrix output.
+
+```{r}
+spiders$abundance <- spiders$males + spiders$females # create a new variable
+```
+
+```{r}
+library(reshape2) # change from long format to wide format
+spider.matrix <- dcast(spiders, start.date + end.date + block + plot + treatment + replicate + sampling.method ~ genus, sum, value.var = "abundance", na.rm =TRUE)
+View(spider.matrix)
+```
+
+```{r}
+library(dplyr)
+spider_cleaned <- spider.matrix %>% select(-contains("imm"), -c(LinytoID, LinyToID, unk_toID))
+spider_cleaned_1 <- spider_cleaned[rowSums(spider_cleaned[, 8:50] != 0) > 0, ]
+View(spider_cleaned_1)
+```
+
+```{r}
+spider_cleaned_1$treatment <- as.factor(spider_cleaned_1$treatment)
+spider_cleaned_1$sampling.method <- as.factor(spider_cleaned_1$sampling.method)
+```
+
+```{r}
+spider1 <- spider_cleaned_1[, 8:50]
+spider1[spider1 > 0] <- 1
+spider1$treatment <- spider_cleaned_1$treatment
+View(spider1)
+```
+
+```{r}
+dis.matrix.pa <- vegdist(spider1[, 1:43], method="bray")
+print(dis.matrix.pa) ################## How do I provide the distance matrix output????????????
+```
+
+
+
+
+
+## 3. Run a nonmetric multidimensional scaling (NMDS) model using the metaMDS() function on the spider genera data. Provide a figure showing the treatment groups with 95% confidence interval ellipses. Report the model stress.
+
+Stress: 0.0001915948
+```{r}
+nmds.spider.pa <- metaMDS(dis.matrix.pa, trymax=1000, autotransform = TRUE, k=2)
+nmds.spider.pa
+```
+```{r}
+any(is.na(dis.matrix.pa))
+stressplot(nmds.spider.pa) #########DO I need stressplot here?
+```
+
+
+```{r}
+library(ggplot2)
+library(vegan)
+```
+
+```{r}
+View(spider1)
+library(vegan)
+ordiplot(nmds.spider.pa, display = "sites", xlim= c(-1.5, 1.5), ylim=c(-1.5, 1.5))
+points(nmds.spider.pa, display = "sites",select= which(spider_cleaned_1$treatment=="HemlockControl"),pch=17,cex=1, col="#73D055FF")
+points(nmds.spider.pa, display = "sites",select= which(spider_cleaned_1$treatment=="Girdled"),pch = 18,cex=1,col="#481567FF")
+points(nmds.spider.pa, display = "sites",select= which(spider_cleaned_1$treatment=="Logged"),pch=15,cex=1,col="#2D708EFF")
+points(nmds.spider.pa, disp = "sites",select= which(spider_cleaned_1$treatment=="HardwoodControl"),pch=16,cex=1, col="#FDE725FF")
+ordiellipse(nmds.spider.pa,spider_cleaned_1$treatment,draw="lines",col=c("#73D055FF","#481567FF","#2D708EFF","#FDE725FF"), lwd=3,kind="sd",conf=0.90,label=FALSE)
+
+legend("topleft",legend= c("Hemlock","Girdled","Logged","Hardwood"), pch=c(17,18,15,16),cex=1,bty="n",col=c("#73D055FF","#481567FF","#2D708EFF","#FDE725FF")
+```
+
+
+
+## 4. Run a permutational multivariate analysis of variance (PERMANOVA) using adonis2(). Model the bray-curtis distance matrix as a function of treatment. Provide the PERMANOVA output.
+```{r}
+adonis2(dis.matrix.pa~spider1$treatment, permutations=999)
+```
+```{r}
+install.packages("devtools")
+install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
+library(pairwiseAdonis)
+pairwise.adonis(dis.matrix.pa, spider1$treatment)
+```
+
+
+## 5. Interpret the output (using the figure and PERMANOVA results).
+
+According to PERMANOVA, there is significant differences among treatment groups. However, treatment groups explain approximately 7.67% of  the total variance, suggesting that the remaining 92.33% is explained by factors other than the treatment groups. 
+
+When looking at pairwise PERMANOVA, there are significant differences between groups (p.adjusted = 0.006), except Girdled and Hemlock groups (p.adjusted = 0.228). Also, the differences between logged and hemlock treatments suggest relatively strong differences compared to other paired groups.
+
+Overall, however, all the treatment groups contribute small portion of total data variation.
+
+
+
+
+## 6. Now, some data wrangling for the understory herb data. Change the data set from long format to wide format using species as the taxonomic resolution (i.e., each column should be a plant species). Be sure that the new data frame includes the predictor variables. Then, subset the data by year 2008, so it aligns with the spider data. Lastly, the number of samples per plot differs among the spider data set (two samples per plot, one for each sampling method) and plant data set (10 subplots). You need to make sure each data frame has the same number of samples. For this example, take the average of subpplots 1-5 and the average of subplots 6-10, and create a new data set that has these two averages represented per plot.
+
+```{r}
+herb$species <- as.factor(herb$species)
+View(herb)
+herb.matrix <- dcast(herb, year+block+trt+plot+subplot ~ species, mean, value.var="cover", fill=0)
+View(herb.matrix)
+```
+
+```{r}
+herb.matrix1 <- herb.matrix %>% filter(year=="2008") %>% droplevels
+herb.matrix2 <- herb.matrix1[,colSums(herb.matrix1 !=0) > 0]
+herb.matrix2 <- herb.matrix2 %>% select(-subplot_group)
+View(herb.matrix2)
+
+data_avg <- herb.matrix2 %>% group_by(plot) %>% mutate(avg_subplots_1_5 = mean(value[subplot %in% 1:5], na.rm = TRUE), avg_subplots_6_10 = mean(value[subplot %in% 6:10], na.rm = TRUE)) %>% select(-subplot)
+```
+
+
+## 7. Run a detrended correspondence analysis (DCA) to determine the most appropriate constrained model for these data. Provide the output. Use the original data set with abundances.
+
+## 8. Run the appropriate model (RDA or CCA). Provide a figure.
+
+## 9. Interpret the results.

@@ -424,14 +424,17 @@ summary(fit_lmer_LS)
 emmeans(fit_lmer_LS, pairwise~"letter")
 ```
 
-############################################################################
-############################################################################
-############################################################################
-############################################################################
-############################################################################
-############################################################################
-############################################################################
-## R activity
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+
+## R activity 5
 ```{r}
 seed_df <- read.table("C:/Users/chemk/OneDrive/Desktop/Classes/ENT6707_DataAnalysis/week7/Supplemental_RCB/EPP_seed.txt", header=T, sep="\t", colClasses=c("factor", "factor", "factor", NA))
 summary(seed_df)
@@ -577,14 +580,17 @@ new_data$Pred_log <- exp(predict(fit_trees_log_1, newdata=new_data))
 new_data$Pred_poly <- predict(fit_trees_poly, newdata=new_data)
 ggplot(data=trees, mapping=aes(x=Girth, y=Volume))+geom_point()+theme_classic()+geom_line(data=new_data, aes(x=Girth, y=Pred_lm), linewidth=1.2)+geom_line(data=new_data, aes(x=Girth, y=Pred_log), color="yellow", linewidth=1.2)+geom_line(data=new_data, aes(x=Girth, y=Pred_poly), linetype="dashed", linewidth=1.2, color="blue")
 ```
-############################################################################
-############################################################################
-############################################################################
-############################################################################
-############################################################################
-############################################################################
-############################################################################
-## R Activity 6 Simple Linear Regression Practice / Fitting the model
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+
+## R Activity 6: Simple Linear Regression Practice / Fitting the model
 ```{r}
 OT <- Orange[Orange$Tree == 1,]
 ggplot(data=OT, mapping=aes (x=age, y=circumference))+geom_point()+theme_classic()+scale_y_continuous(limits = c(0,200), breaks=seq(0,200,by=50))+scale_x_continuous(limits=c(0,1600), breaks=seq(0,1500, by=300), expand=c(0,0))
@@ -638,14 +644,17 @@ head(new_data)
 ggplot(data=OT, mapping=aes(x=age, y=circumference))+geom_point()+theme_classic()+geom_line(data=new_data, aes(x=age, y=predicted_values))+scale_y_continuous(limits=c(0,200), breaks=seq(0,200,by=50))+scale_x_continuous(limits=c(0,1600), breaks=seq(0,1500,by=300), expand=c(0,0))
 ```
 
-############################################################################
-############################################################################
-############################################################################
-############################################################################
-############################################################################
-############################################################################
-############################################################################
-## Week 9 Practice
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+
+# R activity 7 Practice
 
 
 Fitting a MLR (Multiple linear regression) model
@@ -771,14 +780,17 @@ Anova(fit_ex_SS, type="III")
 
 
 
-############################################################################
-############################################################################
-############################################################################
-############################################################################
-############################################################################
-############################################################################
-############################################################################
-##Activity 8: Linear Mixed-Effects Models
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+
+# Activity 8: Linear Mixed-Effects Models
 
 # Fitting linear mixed-effects models
 ```{r}
@@ -834,13 +846,17 @@ lmer_gaussian_slope <- lmer(circumference~age + (age|Tree), data=Orange)
 summary(lmer_gaussian_slope)
 ```
 
-############################################################################
-############################################################################
-############################################################################
-############################################################################
-############################################################################
-############################################################################
-############################################################################
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+
 ## R Activity 9 Practice : Generalized Linear (Mixed-Effects) Models
 
 
@@ -1024,5 +1040,569 @@ summary(glmer_poisson)
 new_data_pois_me <- data.frame(cHEIGHT = seq(-60, 71, 0.001))
 new_data_pois_me$Predicted_TICKS_poisson <- predict(glmer_poisson, newdata=new_data_pois_me, type="response", re.form=NA)
 ggplot(data=grouseticks, mapping=aes(x=cHEIGHT, y=TICKS))+geom_point()+theme_classic()+geom_line(data=new_data_pois_me, aes(x=cHEIGHT, y=Predicted_TICKS_poisson), linewidth=1)
+```
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+
+# R Activity 10: Measures of species diversity 
+```{r}
+ants <- read.csv(file="C:/Users/chemk/Desktop/hf118-01-ants.csv", header=T, na.strings=c("",".","NA"))
+str(ants)
+```
+
+```{r}
+library(reshape2)
+ant.matrix <- dcast(ants, year+block+plot+treatment+trap.type~code, sum, value.var="abundance", na.rm=TRUE) #na.rm = 결측치를 무시하고 계산을 진행
+str(ant.matrix)
+View(ant.matrix)
+```
+
+```{r}
+#change variables to factors
+ant.matrix$year <- as.factor(ant.matrix$year)
+ant.matrix$block <- as.factor(ant.matrix$block)
+ant.matrix$plot <- as.factor(ant.matrix$plot)
+ant.matrix$treatment <- as.factor(ant.matrix$treatment)
+ant.matrix$trap.type <- as.factor(ant.matrix$trap.type)
+summary(ant.matrix)
+#shorten treatment names
+levels(ant.matrix$treatment)
+```
+
+```{r}
+levels(ant.matrix$treatment) [levels(ant.matrix$treatment)=="HardwoodCOntrol"] <- "Hardwood"
+levels(ant.matrix$treatment) [levels(ant.matrix$treatment)=="HemlockControl"] <- "Hemlock"
+levels(ant.matrix$year)
+```
+
+```{r}
+library(dplyr)
+library(stats)
+yr1 <- ant.matrix %>% dplyr::filter(year== "2015") %>% droplevels()
+yr2 <- ant.matrix %>% dplyr::filter(year== "2018") %>% droplevels()
+```
+
+```{r}
+ants2 <- rbind(yr1, yr2)
+str(ants)
+View(ants2)
+```
+```{r}
+ants3 <- ants2[, colSums(ants2 !=0) > 0]
+str(ants)
+View(ants3)
+```
+
+```{r}
+ants3$totabund <- rowSums(ants3[6:38]) # rowSums 함수는 지정된 열들의 각 행에 대해 합계를 계산합니다.
+View(ants3)
+colSums(ants3[6:38])
+colSums(ants3[39])
+
+
+
+
+# Abundance--------------------------------------------------------------------------------------------------------------------------------
+```{r}
+ant.dom <- colSums(ants2[,6:54]) # sum abundances across sites (이 수식은 ants2 데이터프레임에서 6번째부터 54번째 열까지의 값을 합산하여, 각 열의 합계를 구하는 작업입니다.) 
+ant.dom <- as.data.frame(ant.dom) # change to data frame (as.data.frame(ant.dom)는 ant.dom을 데이터프레임으로 변환하는 수식입니다.)
+View(ant.dom)
+names(ant.dom)[1] <- "count" # rename the abundance column, (names(ant.dom)[1] <- "count"는 ant.dom 데이터프레임의 첫 번째 열 이름을 "count"로 변경하는 수식입니다.)
+View(ant.dom)
+ant.dom$species <- rownames(ant.dom) # make a column of species (ant.dom 데이터프레임의 species라는 새로운 열을 추가하고, 그 열의 값으로 ant.dom의 각 행의 이름을 할당하는 수식입니다.)
+View(ant.dom)
+str(ant.dom)
+ant.dom$species <- as.factor(ant.dom$species) # change species to a factor
+```
+
+```{r}
+library(ggplot2)
+library(forcats)
+ant.dom %>% mutate(species =fct_reorder(species, desc(count))) %>% ggplot(aes(x=species, y=count))+
+  geom_bar(stat="identity", fill="seagreen", alpha=.6, width=.4) +
+  theme(axis.text.x = element_text(angle=45, vjust=1, hjust=1))+
+  xlab("Ant Species")+
+  ylab("Abundance")
+```
+
+```{r}
+barplot(sort(colSums(ants2[,6:54]),decreasing=T), col="seagreen",
+        xlab="", ylab="Abundance", las = 2, ylim = c(0, 800)) # another way to do the same thing
+```
+
+# let's graph species abundance again
+```{r}
+barplot(sort(colSums(ants3[,6:38]),decreasing=T), col="seagreen",
+        xlab="", ylab="Abundance", las = 2, ylim = c(0, 800))
+```
+
+
+# Richness --------------------------------------------------------------------------------------------------------------------------------
+# Count the number of species
+
+```{r}
+ants3 <- ants2[, colSums(ants2 !=0) > 0]
+str(ants)
+View(ants3)
+```
+
+```{r}
+ants3$totabund <- rowSums(ants3[6:20]) # rowSums 함수는 지정된 열들의 각 행에 대해 합계를 계산합니다.
+View(ants3)
+colSums(ants3[6:38])
+colSums(ants3[39])
+```
+
+```{r}
+# let's graph species abundance again
+barplot(sort(colSums(ants3[,6:38]),decreasing=T), col="seagreen",
+        xlab="", ylab="Abundance", las = 2, ylim = c(0, 800))
+```
+
+```{r}
+library(vegan)
+ants3$sp.rich <- specnumber(ants3[,6:39])
+par(mar=c(6,4,2,2))
+str(ants3$sp.rich)
+str(ants3$treatment)
+any(is.na(ants3$sp.rich))
+any(is.na(ants3$treatment))
+boxplot(sp.rich ~ treatment, data = ants3, xlab = "", ylab = "Ant species richness", cex.axis = 1, las = 2) + stripchart(sp.rich ~ treatment, data = ants3, pch = 19, add = TRUE, vertical = TRUE, method = "jitter", jitter = 0.2)
+```
+
+# Species accumulation curves
+### Estimate species richness with accumulation curves
+individual-based rarefaction by treatment, jackknife estimates by treatment
+we are separating out each treatment so we can get a species accumulation curve for each, and then we will graph it
+
+```{r}
+levels(ants3$treatment) #Treatment 변수의 범주형 레벨(treatment가 가질 수 있는 값들)을 확인. 즉 treatment 변수에 어떤 종류의 처리(Girdled, HardwoodControl, 등)가 포함되어 있는지 확인
+girdled <- ants3[which(ants3$treatment == "Girdled"),] #treatment 값이 "HardwoodControl"인 행만 필터링하여 hardwood 객체에 저장
+hardwood <- ants3[which(ants3$treatment == "HardwoodControl"),]
+hemlock <- ants3[which(ants3$treatment == "HemlockControl"),]
+logged <- ants3[which(ants3$treatment == "Logged"),]
+```
+
+still using the R package vegan
+the rarefaction method standardizes the sample sizes so that we are comparing species richness at equivalent abundances
+
+```{r}
+sp.girdled <- specaccum(girdled[6:38], method = "rarefaction", permutations = 100, gamma = "jack2")
+sp.hardwood <- specaccum(hardwood[6:38], method = "rarefaction", permutations = 100, gamma = "jack2")
+any(is.na(hemlock[6:38]))
+all(hemlock[6:38] == 0)
+colSums(hemlock[6:38] == 0)
+sp.hemlock <- specaccum(hemlock[6:38], method = "rarefaction", permutations = 100, gamma = "jack2") #This doesn't work
+sp.logged<-specaccum(logged[6:38], method="rarefaction", permutations=100,gamma="jack2")
+```
+
+```{r}
+plot(sp.girdled,pch=19,col="#481567FF",xvar= c("individuals"),
+ lty=4,lwd=3,
+ ylab="SpeciesRichness",xlab="NumberofIndividuals",
+ xlim=c(0,600),ylim=c(0, 35))+
+plot(sp.hardwood,add=TRUE,pch=15,xvar= c("individuals"),
+ lty=1,lwd=3,col="#FDE725FF")+
+plot(sp.logged,add=TRUE,pch=9,xvar= c("individuals"),
+ lty=3,lwd=3,col="#2D708EFF")+
+legend("bottomright",legend=c("Hemlock","Girdled","Logged","Hardwood"),
+ lty=c(1,2,3,4),cex=1,bty="n",lwd=3,
+ col=c("#73D055FF","#481567FF","#2D708EFF","#FDE725FF"))
+```
+
+```{r}
+install.packages("fossil")
+library(fossil)
+```
+
+```{r}
+jack1(hardwood[6:38], taxa.row = FALSE, abund = TRUE)
+jack2(hardwood[6:38], taxa.row = FALSE, abund = TRUE)
+specnumber(ants3[,6:38], groups = ants3$treatment)
+```
+
+# Diversity ------------------------------------------------------------------------------------------------------
+```{r}
+install.packages("hillR")
+library(hillR)
+library(vegan)
+```
+
+# Shannon diversity index
+```{r}
+ants3$sh.div <- diversity(ants3[,6:38], index = "shannon")
+par(mar=c(6,4,2,2))
+boxplot(sh.div ~ treatment, data = ants3, xlab = "", ylab = "Species diversity (H)", cex.axis = 1, las = 2)+
+  stripchart(sh.div ~ treatment, data = ants3, pch = 19, add = TRUE, vertical = TRUE, method = "jitter", jitter = 0.2)
+```
+
+# Simpson diversity index
+```{r}
+ants3$sp.div <- diversity(ants3[,6:38], index = "simpson")
+par(mar=c(6,4,2,2))
+boxplot(sp.div ~ treatment, data = ants3, xlab = "", ylab = "Species diversity (D)", cex.axis = 1, las = 2)+
+  stripchart(sp.div ~ treatment, data = ants3, pch = 19, add = TRUE, vertical = TRUE, method = "jitter", jitter = 0.2)
+```
+
+# Effective number of species = Hill numbers
+
+```{r}
+hill_taxa(ants3[,6:20], q = 0, MARGIN = 1)
+hill_taxa(ants3[,6:20], q = 1, MARGIN = 1) 
+hill_taxa(ants3[,6:20], q = 2, MARGIN = 1)
+```
+
+Species richness (q=0) 
+```{r}
+ants3$hill.rich <- hill_taxa(ants3[,6:38], q = 0, MARGIN = 1)
+par(mar=c(6,4,2,2))
+boxplot(hill.rich ~ treatment, data = ants3, xlab = "", ylab = "Species Richness",cex.axis = 1, las = 2)+
+  stripchart(hill.rich ~ treatment, data = ants3, pch = 19, add = TRUE, vertical = TRUE, method = "jitter", jitter = 0.2)
+```
+
+Shannon ENS (q=1)
+```{r}
+ants3$hill.shan <- hill_taxa(ants3[,6:38], q = 1, MARGIN = 1)
+par(mar=c(6,4,2,2))
+boxplot(hill.shan ~ treatment, data = ants3, xlab = "", ylab = "ENS Shannon", cex.axis = 1, las = 2)+
+  stripchart(hill.shan ~ treatment, data = ants3, pch = 19, add = TRUE, vertical = TRUE, method = "jitter", jitter = 0.2)
+```
+
+Simpson ENS (q=2)
+```{r}
+ants3$hill.simp <- hill_taxa(ants3[,6:38], q = 2, MARGIN = 1)
+par(mar=c(6,4,2,2))
+boxplot(hill.simp ~ treatment, data = ants3, xlab = "", ylab = "ENS Simpson", cex.axis = 1, las = 2)+
+  stripchart(hill.simp ~ treatment, data = ants3, pch = 19, add = TRUE, vertical = TRUE, method = "jitter", jitter = 0.2)
+```
+
+ 
+# Evenness: measures the relative abundance of each type ----------------------------------------------------------------------------------
+```{r}
+install.packages("chemodiv")
+library(chemodiv)
+```
+
+
+```{r}
+calcDiv(ants3[,6:38], type = "PielouEven")
+calcDiv(ants3[,6:38], type = "HillEven", q = 1)
+calcDiv(ants3[,6:38], type = "HillEven", q = 2)
+```
+
+# Pielou's J
+```{r}
+ants3$sp.evenJ <- calcDiv(ants3[,6:38], type = "PielouEven")
+par(mar=c(6,4,2,2))
+boxplot(sp.evenJ$PielouEven ~ treatment, data = ants3, xlab = "", ylab = "Species evenness (J)", cex.axis = 1, las = 2)+
+  stripchart(sp.evenJ$PielouEven ~ treatment, data = ants3, pch = 19, add = TRUE, vertical = TRUE, method = "jitter", jitter = 0.2)
+```
+
+# Species evenness derived from Hill numbers
+Species evenness can be derived from ENS Shannon and ENS Simpson indices. These metrics are calculated by dividing the ENS indices by the observed number of species.
+
+ENS Shannon
+```{r}
+ants3$sp.evenSh <- calcDiv(ants3[,6:38], type = "HillEven", q = 1)
+par(mar=c(6,4,2,2))
+boxplot(sp.evenSh$HillEven ~ treatment, data = ants3, xlab = "", ylab = "Shannon Evenness", cex.axis = 1, las = 2)+
+  stripchart(sp.evenSh$HillEven ~ treatment, data = ants3, pch = 19, add = TRUE, vertical = TRUE, method = "jitter", jitter = 0.2)
+```
+
+ENS Simpson
+```{r}
+ants3$sp.evenSp <- calcDiv(ants3[,6:38], type = "HillEven", q = 2)
+par(mar=c(6,4,2,2))
+boxplot(sp.evenSp$HillEven ~ treatment, data = ants3, xlab = "", ylab = "Simpson Evenness", cex.axis = 1, las = 2)+
+  stripchart(sp.evenSp$HillEven ~ treatment, data = ants3, pch = 19, add = TRUE, vertical = TRUE, method = "jitter", jitter = 0.2)
+```
+
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________
+
+# R Activity Practice_11
+
+## Road ants data---------------------------------------------------------------------------------------------
+```{r}
+ants <- read.csv(file="https://pasta.lternet.edu/package/data/eml/knb-lter-hfr/118/35/90ca76917fe458ee78390c30de46afe5", header=T, na.strings=c("",".","NA"))
+```
+
+```{r}
+View(ants)
+head(ants)
+tail(ants)
+summary(ants)
+str(ants)
+```
+## reshape from long format to wide format
+```{r}
+library(reshape2)
+ant.matrix <- dcast(ants, year+block+plot+treatment+trap.type~code, sum, value.var="abundance", na.rm=TRUE)
+View(ant.matrix)
+```
+
+## change variables to factors
+```{r}
+ant.matrix$year<-as.factor(ant.matrix$year)
+ant.matrix$block<-as.factor(ant.matrix$block)
+ant.matrix$plot<-as.factor(ant.matrix$plot)
+ant.matrix$treatment<-as.factor(ant.matrix$treatment)
+ant.matrix$trap.type<-as.factor(ant.matrix$trap.type
+```
+
+## check the levels of factor data
+```{r}
+levels(ant.matrix$year)
+```
+## filter and remove(droplevels) levels that is not filtered
+```{r}
+library(dplyr)
+yr1 <- ant.matrix %>% filter(year=="2015") %>% droplevels()
+yr2 <- ant.matrix %>% filter(year=="2018") %>% droplevels()
+```
+
+## Re-bind/combine data frames row by row
+```{r}
+ants2 <- rbind(yr1, yr2)
+View(ants2)
+```
+
+## Columns that contain only zeros are removed, and only the columns with at least one non-zero value remain
+```{r}
+ants3 <- ants2[, colSums(ants2 !=0)>0]
+View(ants3)
+```
+
+## Load understory data-----------------------------------------------------------------------------------------
+```{r}
+herb<-read.csv(file="https://pasta.lternet.edu/package/data/eml/knb-lter-hfr/106/33/417bcd2b9b90c63460d893c43d53ec8c", header=T,na.strings=c("",".","NA"))
+```
+
+```{r}
+View(herb)
+head(herb)
+tail(herb)
+summary(herb)
+str(herb)
+```
+## species codes are provided in the csv file hg106-01-species-codes
+```{r}
+herb$species <- as.factor(herb$species)
+```
+
+## reshape from long format to wide format
+```{r}
+herb.matrix <- dcast(herb, year+block+trt+plot ~ species, mean, value.var="cover", fill=0)
+```
+
+## filter and remove(droplevels) levels that is not filtered
+```{r}
+yr1.herb <- herb.matrix %>% filter(year == "2015") %>% droplevels()
+yr2.herb <- herb.matrix %>% filter(year == "2018") %>% droplevels()
+```
+
+```{r}
+herb2 <- rbind(yr1.herb, yr2.herb)
+```
+
+## remove columns of species that were not observed or observed at low frequencies
+```{r}
+herb3 <- herb2[, colSums(herb2 !=0)> 2]
+```
+
+
+## Ordination methods : indirect gradient analysis / direct gradient analysis--------------------------------------
+```{r}
+library(vegan)
+```
+
+## Indirect gradient analysis (unconstrained ordination) utilizes only the species by sample matrix---------------
+## NMDS(Nonmetric Multidimensional Scaling), PCA(Principal Component Analysis)
+
+## NMDS: Nonmetric multidimensional scaling----------------------------------------------------------------------
+assess differences in species composition among samples, sites, trts
+
+### change ant data to presence/absence
+```{r}
+ants4 <- ants3 [,6:38] # save as a new object
+View(ants4)
+ants4[ants4>0] <- 1 # if a value is greater than zero, replace it with 1
+ants4$treatment <- ants3$treatment # add the treatments back into the data set
+View(ants4)
+```
+
+## Dissimilarity metrix
+```{r}
+dis.matrix.pa <- vegdist(ants4[, 1:33], method = "jaccard")
+```
+
+## NMDS model
+```{r}
+nmds.ants.pa <- metaMDS(dis.matrix.pa, trymax=500, autotransform = TRUE, k=2)
+```
+
+## plot the NMDS model (stressplot)
+```{r}
+stressplot(nmds.ants.pa)
+```
+```{r}
+str(nmds.ants.pa)
+site_scores <- scores(nmds.ants.pa, display="sites")
+head(site_scores)
+```
+
+
+```{r}
+library(vegan)
+ordiplot(nmds.ants.pa,disp="sites",type="n", xlim= c(-1.5,1.5),ylim=c(-1.5,1.5))
+points(x,"sites",select= which(ants3$treatment=="HemlockControl"),pch=17,cex=1, col="#73D055FF")
+points(nmds.ants.pa,disp="sites",select= which(ants3$treatment=="HemlockControl"),pch=17,cex=1, col="#73D055FF")
+points(nmds.ants.pa,disp="sites",select= which(ants3$treatment=="Girdled"),pch = 18,cex=1,col="#481567FF")
+points(nmds.ants.pa,disp="sites",select= which(ants3$treatment=="Logged"),pch=15,cex=1,col="#2D708EFF")
+points(nmds.ants.pa,disp="sites",select= which(ants3$treatment=="HardwoodControl"),pch=16,cex=1, col="#FDE725FF")
+ordiellipse(nmds.ants.pa,ants3$treatment,draw="lines",col=c("#73D055FF","#481567FF","#2D708EFF","#FDE725FF"), lwd=3,kind="sd",conf=0.90,label=FALSE)
+legend("topleft",legend= c("Hemlock","Girdled","Logged","Hardwood"), pch=c(17,18,15,16),cex=1,bty="n",col=c("#73D055FF","#481567FF","#2D708EFF","#FDE725FF")
+```
+
+## NMDS model - PERMANOVA: permutational multivariate analysis of variance
+```{r}
+adonis2(dis.matrix.pa~ants4$treatment, permutations=999)
+```
+```{r}
+install.packages("devtools")
+install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
+library(pairwiseAdonis)
+pairwise.adonis(dis.matrix.pa, ants4$treatment)
+```
+
+
+## NMDS model - BETADISPER: Homogeneity of multivariate group dispersion
+```{r}
+ants.beta.pa <- betadisper(dis.matrix.pa, ants4$treatment, type=c("median"))
+```
+```{r}
+anova(ants.beta.pa)
+```
+
+```{r}
+plot(ants.beta.pa)
+```
+
+
+## PCA (Principal component analysis)---------------------------------------------------------------------------
+```{r}
+herb.pca <- rda(herb3[,5:23], scale=FALSE)
+# if RDA function is used without explanatory variables, then it calculates a PCA
+summary(herb.pca)
+species_scores <- scores(herb.pca, display = "species")
+species_scores
+site_scores <- scores(herb.pca, display = "sites")
+site_scores
+```
+```{r}
+herb.pca$sites
+str(herb.pca)
+herb.pca$CA$u
+herb.pca$sites <- herb.pca$CA$u
+```
+
+
+```{r}
+library(vegan)
+ordiplot(herb.pca, display = 'sites', type = 'n')
+points(herb.pca, dis = "sites", select = which(herb3$trt=="hemlock"), pch = 17, cex = 1, col = "#73D055FF")
+points(herb.pca, dis = "sites", select = which(herb3$trt=="girdled"), pch = 18, cex = 1, col = "#481567FF")
+points(herb.pca, dis = "sites", select = which(herb3$trt=="logged"), pch = 15, cex = 1, col = "#2D708EFF")
+points(herb.pca, dis = "sites", select = which(herb3$trt=="hardwood"), pch = 16, cex = 1, col = "#FDE725FF")
+orditorp(herb.pca, display = 'sp')
+legend("topleft", legend = c("Hemlock", "Girdled", "Logged", "Hardwood"), pch = c(17, 18, 15, 16), cex = 1, bty = "n", col = c("#73D055FF", "#481567FF", "#2D708EFF", "#FDE725FF")
+```
+
+## Direct gradient analysis------------------------------------------------------------------------------
+## Constrained ordination; untilizes environmental data in addition to a species by site matrix
+## RDA (Redundancy Analysis) / CCA (Canonical Correspondence Analysis)
+
+## RDA (Redundancy Analysis)-----------------------------------------------------------------------------
+
+```{r}
+ants.rda <- rda(ants3[,6:38]~., herb3[,5:23])
+summary(ants.rda)
+```
+```{r}
+mod0.rda <- rda(ants3[,6:38]~1, herb3[,5:23])
+ants.rda.red <- ordistep(mod0.rda, scope=formula(ants.rda), direction="both", permutations=how(nperm=199))
+```
+
+
+```{r}
+summary(ants.rda.red) # which environmental variables are important
+```
+
+```{r}
+anova(ants.rda.red, by='axis') #which axes are important
+```
+
+```{r}
+ordiplot(ants.rda.red, display = c('si', 'cn'), type = 'n')
+ points(ants.rda.red, dis = "sites", select = which(herb3$trt=="hemlock"), pch = 17, cex = 1, col = "#73D055FF")
+ points(ants.rda.red, dis = "sites", select = which(herb3$trt=="girdled"), pch = 18, cex = 1, col = "#481567FF")
+ points(ants.rda.red, dis = "sites", select = which(herb3$trt=="logged"), pch = 15, cex = 1, col = "#2D708EFF")
+ points(ants.rda.red, dis = "sites", select = which(herb3$trt=="hardwood"), pch = 16, cex = 1, col = "#FDE725FF")
+ text(ants.rda.red, display = 'cn', col = 'navy', cex = 1)
+ orditorp(ants.rda.red, display = 'sp')
+ legend("bottomright", legend = c("Hemlock", "Girdled", "Logged", "Hardwood"), pch = c(17, 18, 15, 16), cex = 1, bty = "n", col = c("#73D055FF", "#481567FF", "#2D708EFF", "#F
+```
+
+## CCA (Canonical Correspondence Analysis)---------------------------------------------------------------------
+```{r}
+ants.cca <- cca(ants3[,6:38]~., herb3[,5:23])
+mod0.cca <- cca(ants3[,6:38] ~ 1, herb3[,5:23])
+ants.cca.red <- ordistep(mod0.cca, scope = formula(ants.cca), direction = "both",
+permutations = how(nperm = 199))
+```
+
+```{r}
+summary(ants.cca.red) #which environmental variables are important
+```
+
+```{r}
+anova(ants.cca.red, by='axis') # which axes are important
+```
+
+```{r}
+ ordiplot(ants.cca.red, display = c('si', 'cn'), type = 'n')
+ points(ants.cca.red, dis = "sites", select = which(herb3$trt=="hemlock"), pch = 17, cex = 1, col = "#73D055FF")
+ points(ants.cca.red, dis = "sites", select = which(herb3$trt=="girdled"), pch = 18, cex = 1, col = "#481567FF")
+ points(ants.cca.red, dis = "sites", select = which(herb3$trt=="logged"), pch = 15, cex = 1, col = "#2D708EFF")
+ points(ants.cca.red, dis = "sites", select = which(herb3$trt=="hardwood"), pch = 16, cex = 1, col = "#FDE725FF")
+ text(ants.cca.red, display = 'cn', col = 'navy', cex = 1)
+ orditorp (ants.cca.red, display = 'sp')
+ legend("topright", legend = c("Hemlock", "Girdled", "Logged", "Hardwood"),
+ pch = c(17, 18, 15, 16), cex = 1, bty = "n", col = c("#73D055FF", "#481567FF", "#2D708EFF", "#F
+```
+
+## How to select which method (CCA or RDA) to use
+
+## DCA (Detrended Correspondence Analysis)
+
+```{r}
+DCA <- decorana(ants3[,6:38])
+DCA
 ```
 

@@ -1,0 +1,168 @@
+---
+title: "R_Activity_10_Assignment"
+author: "Dahee Ahn"
+date: "2024-11-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+rm(list=ls())
+```
+
+## 1. We will use another open source data set from the NSF Harvard Forest Long-term Ecological Research (LTER) site. These data are spiders collected in the Hemlock Removal Experiment. Remember, this experiment includes four treatments (Hemlock girdled, Hemlock logged, Hemlock control, and Hardwood control) each replicated across two (n = 2) 90 x 90 m plots. Load the data into R. We will characterize spider communities among these four treatments and between sampling methods.
+
+```{r}
+spiders <- read.csv(file="C:/Users/chemk/Desktop/Classes/ENT6707_DataAnalysis/week12/HarvardForest_spiders.csv", header=T, na.strings=c("", ".", "NA"))
+```
+
+```{r}
+head(spiders)
+tail(spiders)
+summary(spiders)
+View(spiders)
+str(spiders)
+```
+
+## 2. Before calculating the diversity metrics, you will have to do some data wrangling. First, create a new variable abundance by summing the counts of adult male and female spiders. 
+
+```{r}
+spiders$abundance <- spiders$males + spiders$females
+head(spiders$abundance)
+summary(spiders$abundance)
+```
+
+Next, change the data set from long format to wide format using spider genus as the taxonomic resolution (i.e., each column should be a spider genus). 
+```{r}
+library(reshape2)
+spider.matrix <- dcast(spiders, start.date + end.date + block + treatment + plot + replicate + sampling.method ~ genus, sum, value.var = "abundance", na.rm =TRUE)
+```
+
+Be sure that the new data frame includes the predictor and nuisance variables. 
+```{r}
+View(spider.matrix)
+```
+
+
+Then, remove any columns that do not have count data (some genera are indicated as immatures with imm), as well as three columns with unidentified spiders (LinytoID, LinyToID, and unk_toID).
+
+```{r}
+spider_cleaned <- spider.matrix[, !grepl("imm", colnames(spider.matrix))]  # remove rows including "imm"
+spider_cleaned <- spider_cleaned[, !(colnames(spider_cleaned) %in% c("LinytoID", "LinyToID", "unk_toID"))]
+View(spider_cleaned)
+```
+
+Lastly, change the variables block, plot, treatment, and sampling method to factors. Provide a summary of the data set.
+```{r}
+spider_cleaned$block <- as.factor(spider_cleaned$block)
+spider_cleaned$treatment <- as.factor(spider_cleaned$treatment)
+spider_cleaned$plot <- as.factor(spider_cleaned$plot)
+spider_cleaned$sampling.method <- as.factor(spider_cleaned$sampling.method)
+
+levels(spider.matrix$treatment)
+```
+How many spider genera were collected? 51
+```{r}
+summary(spider_cleaned)
+View(spider_cleaned)
+```
+
+
+## 3. What are the three most abundant spider genera?
+Answer: Amaurobius, Ceratinella, Collinsia
+
+```{r}
+spider_numeric <- spider_cleaned[sapply(spider_cleaned, is.numeric)]
+spider_new <- spider_cleaned[, colSums(spider_numeric != 0) > 0]
+str(spider_new)
+View(spider_new)
+```
+
+```{r}
+spider_new[8:58] <- sapply(spider_new[8:58], as.numeric)
+spider_new$totabund <- rowSums(spider_new[8:58], na.rm = TRUE)
+View(spider_new)
+colnames(spider_new)[8:58]
+colSums(spider_new[8:58])
+colSums(spider_new[59])
+head(spider_new)
+```
+```{r}
+spider_dom <- colSums(spider_new[,8:58])
+spider_dom <- as.data.frame(spider_dom)
+View(spider_dom)
+names(spider_dom)[1] <- "count"
+View(spider_dom)
+spider_dom$genus <- rownames(spider_dom)
+View(spider_dom)
+str(spider_dom)
+spider_dom$genus <- as.factor(spider_dom$genus)
+```
+
+```{r}
+library(ggplot2)
+library(forcats)
+spider_dom %>% mutate(genus =fct_reorder(genus, desc(count))) %>% ggplot(aes(x=genus, y=count))+
+  geom_bar(stat="identity", fill="gold", alpha=.6, width=.4) +
+  theme(axis.text.x = element_text(size=8, angle=45, vjust=1, hjust=1))+
+  xlab("Ant Species")+
+  ylab("Abundance")
+```
+
+
+
+
+
+
+## 4. Calculate spider genera richness for each sample, add this new variable to the data set, and create a boxplot that shows spider genera richness as a function of treatment.
+```{r}
+library(vegan)
+spider_new$sp.rich <- specnumber(spider_new[,8:58])
+par(mar=c(6,4,2,2))
+boxplot(sp.rich ~ treatment, data = spider_new, xlab = "", ylab = "Spider species richness", cex.axis = 1, las = 2) + 
+  stripchart(sp.rich ~ treatment, data = spider_new, pch = 19, add = TRUE, vertical = TRUE, method = "jitter", jitter = 0.2)
+
+```
+
+
+
+## 5. Calculate another diversity metric of your choice and create a boxplot that shows spider genera diversity as a function of treatment.
+```{r}
+library(hillR)
+library(vegan)
+```
+```{r}
+spider_new$sh.div <- diversity(spider_new[,8:58], index = "shannon")
+par(mar=c(6,4,2,2))
+boxplot(sh.div ~ treatment, data = spider_new, xlab = "", ylab = "Species diversity (H)", cex.axis = 1, las = 2)+
+  stripchart(sh.div ~ treatment, data = spider_new, pch = 19, add = TRUE, vertical = TRUE, method = "jitter", jitter = 0.2)
+```
+
+
+## 6. Create a boxplot that shows spider genera diversity as a function of sampling method.
+```{r}
+str(spider_new)
+spider_new$sampling.method <- as.factor(spider_new$sampling.method)
+spider_new$sh.div <- diversity(spider_new[,8:58], index = "shannon")
+par(mar=c(6,4,2,2))
+boxplot(sh.div ~ sampling.method, data = spider_new, xlab = "", ylab = "Species diversity (H)", cex.axis = 1, las = 2) +
+  stripchart(sh.div ~ sampling.method, data = spider_new, pch = 19, add = TRUE, vertical = TRUE, method = "jitter", jitter = 0.2) +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5))
+```
+
+
+## 7. Fit a regression modeling spider genera diversity as a function of treatment and sampling method. You will need to use materials from previous lectures and activities to determine the appropriate structure of the model. Provide the model summary.
+
+```{r}
+lm_spider <- lm(spider_new$sh.div ~ treatment + sampling.method, data=spider_new)
+summary(lm_spider)
+```
+```{r}
+lm_spider_inter <- lm(spider_new$sh.div ~ treatment * sampling.method, data=spider_new)
+summary(lm_spider)
+```
+
+## 8. Write 1-2 sentences interpreting the results.
+Answer: In hardwood treatment increases diversity by 0.155 compared to other treatments, but the result is not significant (p=0.1592). Pitfall sampling method shows decreased diversity by 0.267 compared to litter_sifting method (p < 0.001).
