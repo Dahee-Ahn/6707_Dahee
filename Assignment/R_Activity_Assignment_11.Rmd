@@ -48,26 +48,28 @@ View(spider.matrix)
 
 ```{r}
 library(dplyr)
-spider_cleaned <- spider.matrix %>% select(-contains("imm"), -c(LinytoID, LinyToID, unk_toID))
-spider_cleaned_1 <- spider_cleaned[rowSums(spider_cleaned[, 8:50] != 0) > 0, ]
+View(spider_cleaned)
+spider_cleaned <- spider.matrix[colSums(spider.matrix[, 8:58] != 0) > 0, ]
+spider_cleaned_1 <- spider_cleaned %>% select(-contains("imm"), -c(LinytoID, LinyToID, unk_toID))
 View(spider_cleaned_1)
 ```
 
 ```{r}
 spider_cleaned_1$treatment <- as.factor(spider_cleaned_1$treatment)
 spider_cleaned_1$sampling.method <- as.factor(spider_cleaned_1$sampling.method)
+View(spider_cleaned)
 ```
 
 ```{r}
-spider1 <- spider_cleaned_1[, 8:50]
-spider1[spider1 > 0] <- 1
+spider1 <- spider_cleaned_1[, 8:58]
 spider1$treatment <- spider_cleaned_1$treatment
 View(spider1)
 ```
 
 ```{r}
-dis.matrix.pa <- vegdist(spider1[, 1:43], method="bray")
-print(dis.matrix.pa) ################## How do I provide the distance matrix output????????????
+library(vegan)
+dis.matrix.pa <- vegdist(spider1[, 1:51], method="bray")
+dis.matrix.pa ################## How do I provide the distance matrix output????????????
 ```
 
 
